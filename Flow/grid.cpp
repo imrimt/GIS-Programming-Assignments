@@ -25,6 +25,24 @@ Grid::Grid() {
 
 }
 
+Grid::Grid(int nRows, int nCols, int NODATA_value) {
+	this->nRows = nRows;
+	this->nCols = nCols;
+	this->NODATA_value = NODATA_value;
+	data = new (nothrow) float*[nRows];
+	if (data == NULL) {
+		cout << "Unsuccessful memory allocation. Exiting";
+		exit(1);
+	}
+	for (int i = 0; i < nRows; i++) {
+		data[i] = new (nothrow) float[nCols];
+		if (data[i] == NULL) {
+			cout << "Unsuccessful memory allocation. Exiting";
+			exit(1);
+		}
+	}
+}
+
 Grid::~Grid() {
 	delete[] data;
 }
@@ -82,15 +100,6 @@ bool Grid::readGridFromFile(string gridFileName) {
 		r++;
 	}
 
-	//storing important information
-	// grid.rows = nRows;
-	// grid.cols = nCols;
-	// grid.xllCorner = xllCorner;
-	// grid.yllCorner = yllCorner;
-	// grid.cellSize = cellSize;
-	// grid.NODATA_value = NODATA_value;
-	// grid.data = data;
-
 	return true;
 }
 
@@ -105,12 +114,61 @@ void Grid::multiply(float multiplier) {
 	}
 }
 
-Grid Grid::computeFD(Grid &FDGrid) {
-	
+Grid Grid::computeFD() {
+
+	Grid FDgrid(nRows, nCols, NODATA_value);
+
+	for (int i = 0; i < nRows; i++) {
+		for (int j = 0; j < nCols; j++) {
+			if (data[i][j] == NODATA_value) {
+				FDgrid.setData(i,j, NODATA_value);
+				continue;
+			}
+			float max = 0;
+			int maxR, maxC;
+			maxR = maxC = 0;
+			cout << "LOOKING AT POINT (" << i << "," << j << ")" << endl;
+			for (int dx = -1; dx <= 1; dx++) {
+				for (int dy = -1; dy <= 1; dy++) {
+					if (dx || dy) {
+						if (inGrid(i + dx, j + dy)) {
+							float temp = data[i+dx][j+dy];
+							cout << "temp = " << temp << endl;
+							cout << "Max = " << max << endl;
+							if (temp == NODATA_value || temp >= data[i][j]) {
+								if (dx + dy == 2 && max == INT_MIN) {
+									//point is a pit or nodata
+									max = PIT_VALUE; 
+								}
+							}
+							else {
+								cout << "diff = " << data[i][j] - temp << endl;
+								if (data[i][j] - temp > max) {
+									max = data[i][j] - temp;
+									maxR = dx;
+									maxC = dy;
+								}
+							}
+						}
+					}
+				}
+			}
+
+			cout << "flow direction: (" << maxR << ", " << maxC << ") at point (" << i << "," << j << ")" << endl;
+
+			FDgrid.setData(i,j, encodingDirection(maxR, maxC));
+		}
+	}
+
+	return FDgrid;
 }
 
-Grid Grid::computeFA(Grid &FAGrid) {
+Grid Grid::computeFA(const Grid &FDgrid) {
+	Grid FAgrid(nRows, nCols, NODATA_value);
 
+	
+
+	return FAgrid;
 }
 
 int Grid::setData(int row, int col, int value) {
@@ -123,10 +181,35 @@ int Grid::setData(int row, int col, int value) {
 	return value;
 }
 
+string Grid::writeToFile(string path) {
+	ofstream outputFile(path);
+	outputFile << "nCols\t" << nCols << endl;
+	outputFile << "nRows\t" << nRows << endl;
+	outputFile << "xllCorner\t" << xllCorner << endl;
+	outputFile << "yllCorner\t" << yllCorner << endl;
+	outputFile << "cellSize\t" << cellSize << endl;
+	outputFile << "NODATA_value\t" << NODATA_value << endl;
+
+	for (int r = 0; r < nRows; r++) {
+		for (int c = 0; c < nCols; c++) {
+			outputFile << data[r][c] << " ";
+		}
+		outputFile << endl;
+	}
+
+	// char buffer[MAX_PATH];
+	// GetModuleFileName(NULL, buffer, MAX_PATH);
+	// size_type pos = string(buffer).find_last_of("\\/");
+	// return string(buffer).substr(0, pos);
+
+	return path;
+}
+
+
 /* GRID HELPER FUNCTIONS */
 
 void Grid::copyInfo(Grid &toCopy) {
-	toCopy.data 
+ 	
 }
 
 //print both the header and the values of the grid
@@ -173,4 +256,46 @@ void Grid::printValues() {
 //scan for number in a given string
 string Grid::numberTokenize(const string &input) {
 	return input.substr(input.find_first_of("-123456789"));
+}
+
+//check if the coordinate is within grid
+bool Grid::inGrid(int x, int y) {
+	return (x >= 0 && x < nRows && y >= 0 && y < nCols);
+}
+
+//encode flow direction into an integer
+int Grid::encodingDirection(int r, int c) { 
+	if (r == -1) {
+		if (c == -1) {
+			return 32;
+		}
+		else if (c == 0) {
+			return 64;
+		}
+		else {
+			return 128;
+		}
+	}
+	else if (r == 0) {
+		if (c == -1) { 
+			return 16;
+		}
+		else if (c == 0) {
+			return PIT_VALUE;
+		}
+		else {
+			return 1;
+		}
+	}
+	else {
+		if (c == -1) {
+			return 8;
+		}
+		else if (c == 0) { 
+			return 4;
+		}
+		else {
+			return 2;
+		}
+	}	
 }

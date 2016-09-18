@@ -40,9 +40,13 @@ int main(int argc, char* argv[]) {
 
 	grid.printGrid();
 
+	Grid FDgrid = grid.computeFD();
+
+	cout << "write to: " << FDgrid.writeToFile(argv[2]);
+
 	cout << endl;
 
-	grid.printGrid();
+	FDgrid.printGrid();
 
 	return 0;
 
