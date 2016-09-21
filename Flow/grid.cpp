@@ -114,6 +114,15 @@ void Grid::multiply(float multiplier) {
 	}
 }
 
+//resets all data of the grid to 0.0
+void Grid::resetData() {
+	for (int r = 0; r < nRows; r++) {
+		for (int c = 0; c < nCols; c++) {
+			data[r][c] = INITIAL_ACCUMULATION;
+		}
+	}
+}
+
 Grid Grid::computeFD() {
 
 	Grid FDgrid(nRows, nCols, NODATA_value);
@@ -127,22 +136,18 @@ Grid Grid::computeFD() {
 			float max = 0;
 			int maxR, maxC;
 			maxR = maxC = 0;
-			cout << "LOOKING AT POINT (" << i << "," << j << ")" << endl;
 			for (int dx = -1; dx <= 1; dx++) {
 				for (int dy = -1; dy <= 1; dy++) {
 					if (dx || dy) {
 						if (inGrid(i + dx, j + dy)) {
 							float temp = data[i+dx][j+dy];
-							cout << "temp = " << temp << endl;
-							cout << "Max = " << max << endl;
 							if (temp == NODATA_value || temp >= data[i][j]) {
 								if (dx + dy == 2 && max == INT_MIN) {
 									//point is a pit or nodata
-									max = PIT_VALUE; 
+									max = NOFLOW_VALUE; 
 								}
 							}
 							else {
-								cout << "diff = " << data[i][j] - temp << endl;
 								if (data[i][j] - temp > max) {
 									max = data[i][j] - temp;
 									maxR = dx;
@@ -153,9 +158,6 @@ Grid Grid::computeFD() {
 					}
 				}
 			}
-
-			cout << "flow direction: (" << maxR << ", " << maxC << ") at point (" << i << "," << j << ")" << endl;
-
 			FDgrid.setData(i,j, encodingDirection(maxR, maxC));
 		}
 	}
@@ -165,10 +167,41 @@ Grid Grid::computeFD() {
 
 Grid Grid::computeFA(const Grid &FDgrid) {
 	Grid FAgrid(nRows, nCols, NODATA_value);
+	FAgrid.resetData();
 
-	
+	for (int i = 0; i < nRows; i++) {
+		for (int j = 0; j < nCols; j++) {
+			if (FDgrid.valueAt(i,j) == NODATA_value) {
+				FAgrid.setData(i, j, NODATA_value);
+			}
+			else {
+				FAgrid.setData(i,j, computeFAforPoint(i, j, FDgrid, FAgrid));
+			}
+		}
+	}
 
 	return FAgrid;
+}
+
+float Grid::computeFAforPoint(int i, int j, const Grid &FDgrid, const Grid &FAgrid) {
+	if (FAgrid.valueAt(i,j) != INITIAL_ACCUMULATION) {
+		return FAgrid.valueAt(i,j);
+	}
+
+	float flow = 1;
+	for (int dx = -1; dx <= 1; dx++) {
+		for (int dy = -1; dy <= 1; dy++) {
+			if (dx || dy) {
+				if (inGrid(i + dx, i + dy)) {
+					if (FDgrid.valueAt(i + dx, j + dy) == encodingDirection(-1 * dx, -1 * dy)) {
+						flow += computeFAforPoint(i + dx, j + dy, FDgrid, FAgrid);
+					}
+				}
+			}
+		}
+	}
+
+	return flow;
 }
 
 int Grid::setData(int row, int col, int value) {
@@ -259,7 +292,7 @@ string Grid::numberTokenize(const string &input) {
 }
 
 //check if the coordinate is within grid
-bool Grid::inGrid(int x, int y) {
+bool Grid::inGrid(int x, int y) const {
 	return (x >= 0 && x < nRows && y >= 0 && y < nCols);
 }
 
@@ -281,7 +314,7 @@ int Grid::encodingDirection(int r, int c) {
 			return 16;
 		}
 		else if (c == 0) {
-			return PIT_VALUE;
+			return NOFLOW_VALUE;
 		}
 		else {
 			return 1;

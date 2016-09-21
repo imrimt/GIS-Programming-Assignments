@@ -30,6 +30,17 @@ int main(int argc, char* argv[]) {
 	}
 
 	string input = argv[1];
+	string inputPath;
+	string fileName;
+
+	if (input.find_last_of("/") != string::npos) {
+		int pos = input.find_last_of("/");
+		inputPath = input.substr(0, pos + 1);
+		fileName = input.substr(input.find_last_of("/") + 1);
+	} 
+	else {
+		fileName = input;
+	}
 
 	Grid grid;
 
@@ -42,11 +53,19 @@ int main(int argc, char* argv[]) {
 
 	Grid FDgrid = grid.computeFD();
 
-	cout << "write to: " << FDgrid.writeToFile(argv[2]);
+	cout << endl;
+
+	cout << "write to: " << FDgrid.writeToFile(inputPath + argv[2]) << endl;
+
+	FDgrid.printGrid();
 
 	cout << endl;
 
-	FDgrid.printGrid();
+	Grid FAgrid = grid.computeFA(FDgrid);
+
+	cout << "write to: " << FAgrid.writeToFile(inputPath + argv[3]) << endl;
+
+	FAgrid.printGrid();
 
 	return 0;
 

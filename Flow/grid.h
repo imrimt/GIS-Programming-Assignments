@@ -7,7 +7,8 @@
 #include <string>
 #include <cstddef>
 
-const int PIT_VALUE = -1;
+const float NOFLOW_VALUE = -1;
+const float INITIAL_ACCUMULATION = 0.0;
 
 using namespace std;
 
@@ -21,14 +22,17 @@ class Grid {
 		Grid computeFD();
 		Grid computeFA(const Grid &FDGrid);
 
+		float computeFAforPoint(int r, int c, const Grid &FDgrid, const Grid &FAgrid);
+
 		bool readGridFromFile(string gridFileName);
 
+		void resetData();
 		void printGrid();
 		void printHeader();
 		void printValues();
 		void multiply(float multiplier);
 
-		int valueAt(int r, int c) {if (inGrid(r,c)) return data[r][c]; else return NODATA_value;}
+		int valueAt(int r, int c) const {if (inGrid(r,c)) return data[r][c]; else return NODATA_value;}
 		int getNRows() {return nRows;}
 		int getNCols() {return nCols;}
 		int getxllCorner() {return xllCorner;}
@@ -54,7 +58,7 @@ class Grid {
 		string numberTokenize(const string &input);
 		void printInfo();
 		bool isInteger(string str);
-		bool inGrid(int x, int y);
+		bool inGrid(int x, int y) const;
 		void copyInfo(Grid &toGrid);
 		int encodingDirection(int r, int c);
 
