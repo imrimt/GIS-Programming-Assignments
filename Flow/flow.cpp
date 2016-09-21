@@ -42,6 +42,9 @@ int main(int argc, char* argv[]) {
 		fileName = input;
 	}
 
+	cout << "filePath = " << inputPath << endl;
+	cout << "fileName = " << fileName << endl;
+
 	Grid grid;
 
 	if (grid.readGridFromFile(input) == false) {
