@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <cstddef>
+#include <time.h>
 
 const float NOFLOW_VALUE = -1;
 const float INITIAL_ACCUMULATION = 0.0;
@@ -20,9 +21,11 @@ class Grid {
 		~Grid();
 
 		Grid computeFD();
-		Grid computeFA(const Grid &FDGrid);
+		Grid computeFA(const Grid &FDgrid);
+		Grid computeFAslow(const Grid &FDgrid);
 
 		float computeFAforPoint(int r, int c, const Grid &FDgrid, const Grid &FAgrid);
+		float computeFAforPointSlow(int i, int j, const Grid &FDgrid);
 
 		bool readGridFromFile(string gridFileName);
 

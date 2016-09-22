@@ -3,19 +3,7 @@
  Author: Son D. Ngo
  Date:   September 2016
  
- Description: Read in a grid ascii file and multiply the grid by the given
- multiplier
- 
- Running instructions:
- Run this program with two arguments on the command line: the input file and 
- 	the multiplier
- 
- g++ -Wall -o main main.cpp
- ./main [input file name] [multiplier]
- 
- Running on dover: 
- g++ -std=c++11 -Wall -o main main.cpp
- ./main [input file name] [multiplier]
+ Description: Cpp file for class Grid
   
  ******************************************************************************/
 
@@ -123,6 +111,7 @@ void Grid::resetData() {
 	}
 }
 
+//compute flow direction for all points
 Grid Grid::computeFD() {
 
 	Grid FDgrid(nRows, nCols, NODATA_value);
@@ -165,6 +154,7 @@ Grid Grid::computeFD() {
 	return FDgrid;
 }
 
+//compute flow accumulation for all points using dynamic programming
 Grid Grid::computeFA(const Grid &FDgrid) {
 	Grid FAgrid(nRows, nCols, NODATA_value);
 	FAgrid.resetData();
@@ -183,6 +173,7 @@ Grid Grid::computeFA(const Grid &FDgrid) {
 	return FAgrid;
 }
 
+//compute flow accumulation at one point using dynamic programming
 float Grid::computeFAforPoint(int i, int j, const Grid &FDgrid, const Grid &FAgrid) {
 	if (FAgrid.valueAt(i,j) != INITIAL_ACCUMULATION) {
 		return FAgrid.valueAt(i,j);
@@ -204,6 +195,44 @@ float Grid::computeFAforPoint(int i, int j, const Grid &FDgrid, const Grid &FAgr
 	return flow;
 }
 
+//compute flow accumation for all points using quadratic recursion
+Grid Grid::computeFAslow(const Grid &FDgrid) {
+	Grid FAgrid(nRows, nCols, NODATA_value);
+	FAgrid.resetData();
+
+	for (int i = 0; i < nRows; i++) {
+		for (int j = 0; j < nCols; j++) {
+			if (FDgrid.valueAt(i,j) == NODATA_value) {
+				FAgrid.setData(i, j, NODATA_value);
+			}
+			else {
+				FAgrid.setData(i,j, computeFAforPointSlow(i, j, FDgrid));
+			}
+		}
+	}
+
+	return FAgrid;
+}
+
+//compute flow accumulation at one point using quadratic recursion
+float Grid::computeFAforPointSlow(int i, int j, const Grid &FDgrid) {
+	float flow = 1;
+	for (int dx = -1; dx <= 1; dx++) {
+		for (int dy = -1; dy <= 1; dy++) {
+			if (dx || dy) {
+				if (inGrid(i + dx, i + dy)) {
+					if (FDgrid.valueAt(i + dx, j + dy) == encodingDirection(-1 * dx, -1 * dy)) {
+						flow += computeFAforPointSlow(i + dx, j + dy, FDgrid);
+					}
+				}
+			}
+		}
+	}
+
+	return flow;
+}
+
+//set data at a particular point
 int Grid::setData(int row, int col, int value) {
 	if (row < 0 || row >= nRows || col < 0 || col >= nCols) {
 		return NODATA_value;
@@ -214,6 +243,7 @@ int Grid::setData(int row, int col, int value) {
 	return value;
 }
 
+//write the grid to file in ascii format
 string Grid::writeToFile(string path) {
 	ofstream outputFile(path);
 	outputFile << "nCols\t" << nCols << endl;
@@ -229,11 +259,6 @@ string Grid::writeToFile(string path) {
 		}
 		outputFile << endl;
 	}
-
-	// char buffer[MAX_PATH];
-	// GetModuleFileName(NULL, buffer, MAX_PATH);
-	// size_type pos = string(buffer).find_last_of("\\/");
-	// return string(buffer).substr(0, pos);
 
 	return path;
 }
