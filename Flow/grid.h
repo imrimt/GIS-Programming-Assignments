@@ -7,6 +7,7 @@
 #include <string>
 #include <cstddef>
 #include <time.h>
+#include <vector>
 
 const float NOFLOW_VALUE = -1;
 const float INITIAL_ACCUMULATION = 0.0;
@@ -44,8 +45,10 @@ class Grid {
 		int getNODATA_value() {return NODATA_value;}
 		int geth_min() {return h_min;}
 		int geth_max() {return h_max;}
+		vector<string> getHeader() { return header; }
 
 		int setData(int r, int c, int value);
+		void setHeader(const vector<string> newHeader) { header = newHeader; }
 
 		// I-O operations
 		string writeToFile(string path);
@@ -64,5 +67,7 @@ class Grid {
 		bool inGrid(int x, int y) const;
 		void copyInfo(Grid &toGrid);
 		int encodingDirection(int r, int c);
+
+		vector<string> header;
 
 };

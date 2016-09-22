@@ -49,21 +49,27 @@ bool Grid::readGridFromFile(string gridFileName) {
 
 	//getting important information about the grid
 	getline(myFile,line);
+	header.push_back(line);
 	nCols = stoi(numberTokenize(line));
 
 	getline(myFile,line);
+	header.push_back(line);
 	nRows = stoi(numberTokenize(line));
 
 	getline(myFile,line);
+	header.push_back(line);
 	xllCorner = stof(numberTokenize(line));
 
 	getline(myFile,line);
+	header.push_back(line);
 	yllCorner = stof(numberTokenize(line));
 
 	getline(myFile,line);
+	header.push_back(line);
 	cellSize = stof(numberTokenize(line));
 
 	getline(myFile,line);
+	header.push_back(line);
 	NODATA_value = stof(numberTokenize(line));
 
 	//start allocating memory to the grid data 2D-array
@@ -115,6 +121,7 @@ void Grid::resetData() {
 Grid Grid::computeFD() {
 
 	Grid FDgrid(nRows, nCols, NODATA_value);
+	FDgrid.setHeader(header);
 
 	for (int i = 0; i < nRows; i++) {
 		for (int j = 0; j < nCols; j++) {
@@ -158,6 +165,7 @@ Grid Grid::computeFD() {
 Grid Grid::computeFA(const Grid &FDgrid) {
 	Grid FAgrid(nRows, nCols, NODATA_value);
 	FAgrid.resetData();
+	FAgrid.setHeader(header);
 
 	for (int i = 0; i < nRows; i++) {
 		for (int j = 0; j < nCols; j++) {
@@ -246,12 +254,9 @@ int Grid::setData(int row, int col, int value) {
 //write the grid to file in ascii format
 string Grid::writeToFile(string path) {
 	ofstream outputFile(path);
-	outputFile << "nCols\t" << nCols << endl;
-	outputFile << "nRows\t" << nRows << endl;
-	outputFile << "xllCorner\t" << xllCorner << endl;
-	outputFile << "yllCorner\t" << yllCorner << endl;
-	outputFile << "cellSize\t" << cellSize << endl;
-	outputFile << "NODATA_value\t" << NODATA_value << endl;
+	for (int i = 0; i < header.size(); i++) {
+		outputFile << header[i] << endl;
+	}
 
 	for (int r = 0; r < nRows; r++) {
 		for (int c = 0; c < nCols; c++) {
@@ -291,12 +296,9 @@ void Grid::printInfo() {
 
 //print the header of the grid, containing important info
 void Grid::printHeader() {
-	cout << "nCols\t" << nCols << endl;
-	cout << "nRows\t" << nRows << endl;
-	cout << "xllCorner\t" << xllCorner << endl;
-	cout << "yllCorner\t" << yllCorner << endl;
-	cout << "cellSize\t" << cellSize << endl;
-	cout << "NODATA_value\t" << NODATA_value << endl;
+	for (int i = 0; i < header.size(); i++) {
+		cout << header[i] << endl;
+	}
 }
 
 //print the data of the grid
