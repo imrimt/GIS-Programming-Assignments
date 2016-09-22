@@ -53,41 +53,41 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 
-	grid.printGrid();
+	// grid.printGrid();
 
 	Grid FDgrid = grid.computeFD();
 
 	cout << endl;
 
-	cout << "write to: " << FDgrid.writeToFile(inputPath + argv[2]) << endl;
+	// cout << "write to: " << FDgrid.writeToFile(inputPath + argv[2]) << endl;
 
-	FDgrid.printGrid();
+	// FDgrid.printGrid();
 
 	cout << endl;
 
 	// UNCOMMENT THE CODES BELOW TO COMPARE DYNAMIC PROGRAMMING WITH QUADRATIC RECURSION
 
-	// double start, end;
+	double start, end;
 
-	// start = clock();
+	start = clock();
 
-	// Grid badFAgrid = grid.computeFAslow(FDgrid);
+	Grid badFAgrid = grid.computeFAslow(FDgrid);
 
-	// end = clock(); 
+	end = clock(); 
 
-	// cout << "Running time for inefficient quadratic recursion: " << (end-start)/CLOCKS_PER_SEC << " seconds" << endl;
+	cout << "Running time for inefficient quadratic recursion: " << (end-start)/CLOCKS_PER_SEC << " seconds" << endl;
 
-	// start = clock();
+	start = clock();
 
 	Grid FAgrid = grid.computeFA(FDgrid);
 
-	// end = clock();
+	end = clock();
 
-	// cout << "Running time for recursion with dynamic programming: " << (end-start)/CLOCKS_PER_SEC << " seconds" << endl;
+	cout << "Running time for recursion with dynamic programming: " << (end-start)/CLOCKS_PER_SEC << " seconds" << endl;
 
-	cout << "write to: " << FAgrid.writeToFile(inputPath + argv[3]) << endl;
+	// cout << "write to: " << FAgrid.writeToFile(inputPath + argv[3]) << endl;
 
-	FAgrid.printGrid();
+	// FAgrid.printGrid();
 
 	return 0;
 
