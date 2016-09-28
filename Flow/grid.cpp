@@ -11,7 +11,7 @@
 
 Grid::Grid() {
 
-}
+}	
 
 Grid::Grid(int nRows, int nCols, int NODATA_value) {
 	this->nRows = nRows;
@@ -32,7 +32,7 @@ Grid::Grid(int nRows, int nCols, int NODATA_value) {
 }
 
 Grid::~Grid() {
-	delete[] data;
+
 }
 
 //perform reading the ascii file, return false if unsuccessful at
@@ -118,9 +118,9 @@ void Grid::resetData() {
 }
 
 //compute flow direction for all points
-Grid Grid::computeFD() {
+void Grid::computeFD(Grid &FDgrid) {
 
-	Grid FDgrid(nRows, nCols, NODATA_value);
+	// Grid FDgrid(nRows, nCols, NODATA_value);
 	FDgrid.setHeader(header);
 
 	for (int i = 0; i < nRows; i++) {
@@ -129,12 +129,13 @@ Grid Grid::computeFD() {
 				FDgrid.setData(i,j, NODATA_value);
 				continue;
 			}
-			float max = 0;
+			float max = INT_MIN;
 			int maxR, maxC;
 			maxR = maxC = 0;
 			for (int dx = -1; dx <= 1; dx++) {
 				for (int dy = -1; dy <= 1; dy++) {
 					if (dx || dy) {
+						// cout << "direction " << dx << " and " << dy << endl;
 						if (inGrid(i + dx, j + dy)) {
 							float temp = data[i+dx][j+dy];
 							if (temp == NODATA_value || temp >= data[i][j]) {
@@ -145,7 +146,9 @@ Grid Grid::computeFD() {
 							}
 							else {
 								if (data[i][j] - temp > max) {
-									max = data[i][j] - temp;
+									// cout << "data at (" << i << ", " << j << ") = " << data[i][j] << endl;
+									// cout << "temp = " << temp << endl;
+									max = (float)data[i][j] - temp;
 									maxR = dx;
 									maxC = dy;
 								}
@@ -158,12 +161,12 @@ Grid Grid::computeFD() {
 		}
 	}
 
-	return FDgrid;
+	// return FDgrid;
 }
 
 //compute flow accumulation for all points using dynamic programming
-Grid Grid::computeFA(const Grid &FDgrid) {
-	Grid FAgrid(nRows, nCols, NODATA_value);
+void Grid::computeFA(Grid &FAgrid, const Grid &FDgrid) {
+	// Grid FAgrid(nRows, nCols, NODATA_value);
 	FAgrid.resetData();
 	FAgrid.setHeader(header);
 
@@ -178,7 +181,7 @@ Grid Grid::computeFA(const Grid &FDgrid) {
 		}
 	}
 
-	return FAgrid;
+	// return FAgrid;
 }
 
 //compute flow accumulation at one point using dynamic programming
@@ -187,11 +190,13 @@ float Grid::computeFAforPoint(int i, int j, const Grid &FDgrid, const Grid &FAgr
 		return FAgrid.valueAt(i,j);
 	}
 
-	float flow = 1;
+	float flow = 1.0;
 	for (int dx = -1; dx <= 1; dx++) {
 		for (int dy = -1; dy <= 1; dy++) {
 			if (dx || dy) {
-				if (inGrid(i + dx, i + dy)) {
+				if (inGrid(i + dx, j + dy)) {
+					// float temp = FDgrid.valueAt(i + dx, j + dy);
+					// if (temp )
 					if (FDgrid.valueAt(i + dx, j + dy) == encodingDirection(-1 * dx, -1 * dy)) {
 						flow += computeFAforPoint(i + dx, j + dy, FDgrid, FAgrid);
 					}
@@ -204,9 +209,10 @@ float Grid::computeFAforPoint(int i, int j, const Grid &FDgrid, const Grid &FAgr
 }
 
 //compute flow accumation for all points using quadratic recursion
-Grid Grid::computeFAslow(const Grid &FDgrid) {
-	Grid FAgrid(nRows, nCols, NODATA_value);
+void Grid::computeFAslow(Grid &FAgrid, const Grid &FDgrid) {
+	// Grid FAgrid(nRows, nCols, NODATA_value);
 	FAgrid.resetData();
+	FAgrid.setHeader(header);
 
 	for (int i = 0; i < nRows; i++) {
 		for (int j = 0; j < nCols; j++) {
@@ -219,7 +225,7 @@ Grid Grid::computeFAslow(const Grid &FDgrid) {
 		}
 	}
 
-	return FAgrid;
+	// return FAgrid;
 }
 
 //compute flow accumulation at one point using quadratic recursion
@@ -228,7 +234,7 @@ float Grid::computeFAforPointSlow(int i, int j, const Grid &FDgrid) {
 	for (int dx = -1; dx <= 1; dx++) {
 		for (int dy = -1; dy <= 1; dy++) {
 			if (dx || dy) {
-				if (inGrid(i + dx, i + dy)) {
+				if (inGrid(i + dx, j + dy)) {
 					if (FDgrid.valueAt(i + dx, j + dy) == encodingDirection(-1 * dx, -1 * dy)) {
 						flow += computeFAforPointSlow(i + dx, j + dy, FDgrid);
 					}

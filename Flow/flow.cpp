@@ -53,13 +53,26 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 
-	// grid.printGrid();
+	// generate random test grids
+	// Grid grid(40, 40, -9999);
 
-	Grid FDgrid = grid.computeFD();
+	// for (int i = 0; i < 40; i++) {
+	// 	for (int j = 0; j < 40; j++) {
+	// 		grid.setData(i,j,(float)rand() / RAND_MAX * 100.0);
+	// 	}
+	// }
 
-	cout << endl;
+	grid.writeToFile(inputPath + fileName);
 
-	// cout << "write to: " << FDgrid.writeToFile(inputPath + argv[2]) << endl;
+	//grid.printGrid();
+
+	Grid FDgrid(grid.getNRows(), grid.getNCols(), grid.getNODATA_value());
+
+	grid.computeFD(FDgrid);
+
+	// cout << endl;
+
+	cout << "write to: " << FDgrid.writeToFile(inputPath + argv[2]) << endl;
 
 	// FDgrid.printGrid();
 
@@ -67,27 +80,36 @@ int main(int argc, char* argv[]) {
 
 	// UNCOMMENT THE CODES BELOW TO COMPARE DYNAMIC PROGRAMMING WITH QUADRATIC RECURSION
 
-	double start, end;
+	// double start, end;
 
-	start = clock();
+	// start = clock();
 
-	Grid badFAgrid = grid.computeFAslow(FDgrid);
+	// Grid badFAgrid(grid.getNRows(), grid.getNCols(), grid.getNODATA_value());
 
-	end = clock(); 
+	// grid.computeFAslow(badFAgrid, FDgrid);
 
-	cout << "Running time for inefficient quadratic recursion: " << (end-start)/CLOCKS_PER_SEC << " seconds" << endl;
+	// end = clock(); 
 
-	start = clock();
+	// cout << "Running time for inefficient quadratic recursion: " << (end-start)/CLOCKS_PER_SEC << " seconds" << endl;
 
-	Grid FAgrid = grid.computeFA(FDgrid);
+	// start = clock();
 
-	end = clock();
+	Grid FAgrid(grid.getNRows(), grid.getNCols(), grid.getNODATA_value());
 
-	cout << "Running time for recursion with dynamic programming: " << (end-start)/CLOCKS_PER_SEC << " seconds" << endl;
+	grid.computeFA(FAgrid, FDgrid);
 
-	// cout << "write to: " << FAgrid.writeToFile(inputPath + argv[3]) << endl;
+	// end = clock();
+
+	// cout << "Running time for recursion with dynamic programming: " << (end-start)/CLOCKS_PER_SEC << " seconds" << endl;
+
+	cout << "write to: " << FAgrid.writeToFile(inputPath + argv[3]) << endl;
 
 	// FAgrid.printGrid();
+
+	//cleanup memory
+	grid.freeGridData();
+	FDgrid.freeGridData();
+	FAgrid.freeGridData();
 
 	return 0;
 

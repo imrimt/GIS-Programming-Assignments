@@ -1,4 +1,16 @@
+#ifndef GRID_H
+#define GRID_H
+
 /* include files */
+/*****************************************************************************
+ File:   grid.h
+ Author: Son D. Ngo
+ Date:   September 2016
+ 
+ Description: Header file for class Grid
+  
+ ******************************************************************************/
+
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
@@ -21,9 +33,9 @@ class Grid {
 		Grid(int nRows, int nCols, int NODATA_value);
 		~Grid();
 
-		Grid computeFD();
-		Grid computeFA(const Grid &FDgrid);
-		Grid computeFAslow(const Grid &FDgrid);
+		void computeFD(Grid &FDgrid);
+		void computeFA(Grid &FAgrid, const Grid &FDgrid);
+		void computeFAslow(Grid &FAgrid, const Grid &FDgrid);
 
 		float computeFAforPoint(int r, int c, const Grid &FDgrid, const Grid &FAgrid);
 		float computeFAforPointSlow(int i, int j, const Grid &FDgrid);
@@ -35,6 +47,12 @@ class Grid {
 		void printHeader();
 		void printValues();
 		void multiply(float multiplier);
+		void freeGridData() {
+			for (int i = 0; i < nRows; i++) {
+				delete[] data[i];
+			}
+			delete[] data;
+		}
 
 		int valueAt(int r, int c) const {if (inGrid(r,c)) return data[r][c]; else return NODATA_value;}
 		int getNRows() {return nRows;}
@@ -71,3 +89,5 @@ class Grid {
 		vector<string> header;
 
 };
+
+#endif	//GRID_H
