@@ -61,10 +61,9 @@ int main(int argc, char* argv[]) {
 	// 		grid.setData(i,j,(float)rand() / RAND_MAX * 100.0);
 	// 	}
 	// }
+	// grid.writeToFile(inputPath + fileName);
 
-	grid.writeToFile(inputPath + fileName);
-
-	//grid.printGrid();
+	// grid.printGrid();
 
 	Grid FDgrid(grid.getNRows(), grid.getNCols(), grid.getNODATA_value());
 
