@@ -25,6 +25,8 @@
 
 #include "grid.h"
 
+bool isInteger(string str);
+
 int main(int argc, char* argv[]) {
 
 	if (argc != 4) {
@@ -36,6 +38,13 @@ int main(int argc, char* argv[]) {
 	string input = argv[1];
 	string inputPath;
 	string fileName;
+
+	if (isInteger(argv[2]) == false || isInteger(argv[3]) == false) {
+		cout << "Invalid argument for coordinates. Please make sure it's a valid integer" << endl;
+		exit(1);
+	}
+
+	int vprow = stoi(argv[2]), vpcol = stoi(argv[3]);
 
 	if (input.find_last_of("/") != string::npos) {
 		int pos = input.find_last_of("/");
@@ -53,9 +62,37 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 
+	// grid.printGrid();
+
+	// cout << endl;
+
+	Grid viewshedGrid(grid.getNRows(), grid.getNRows(), grid.getNODATA_value());
+
+	grid.compute_viewshed(viewshedGrid, vprow, vpcol);
+
+	viewshedGrid.printGrid();
+
 	//cleanup memory
 	grid.freeGridData();
+	viewshedGrid.freeGridData();
 
 	return 0;
 
+}
+
+//return true if a given string represents an integer, otherwise
+//return false
+bool isInteger(string str) {
+	char start = str[0];
+	if (isdigit(start) == false && start != '-') {
+		return false;
+	} 
+	if (start == '0' && str.length() > 1) {
+		return false;
+	}
+	for (int i = 1; i < str.length(); i++) {
+		if (isdigit(str[i]) == false) return false;
+	}
+
+	return true;
 }

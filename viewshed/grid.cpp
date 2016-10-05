@@ -107,6 +107,13 @@ void Grid::compute_viewshed(Grid &viewshedGrid, int vprow, int vpcol) {
 			viewshedGrid.setAllData(NODATA_value);
 			return;
 		}
+		else {
+			viewshedGrid.setAllData(INITIAL_VIEW);
+		}
+	}
+	else {
+		cout << "SOURCE POINT IS OUT OF BOUND. Exiting..." << endl;
+		exit(1);
 	}
 
 	for (int i = 0; i < viewshedGrid.getNRows(); i++) {
@@ -301,19 +308,112 @@ string Grid::writeToFile(string path) {
 
 
 /* GRID HELPER FUNCTIONS */
+
+//check if a point is visible from a source. Take on 3 possible
+//values: NODATA_value, 1.0 for true, 0.0 for false
 float Grid::isVisible(int vprow, int vpcol, int row, int col) {
-	float result = 0.0;
-	float vpHeight = data[vprow][vpcol];
+
+	// cout << "am I seg faulting here?" << endl;
 
 	//check to make sure that the incoming point is in grid
 	if (inGrid(row, col) == false) return NODATA_value;
 
-	//check visibility
-	
-}
+	// float result = 0.0;
+	float height = data[row][col];
 
-void Grid::copyInfo(Grid &toCopy) {
- 	
+	//edge case 1: points on the verticle/horizontal lines of coordinates
+	if (row == vprow) {
+		if (col == vpcol) {
+			return 1.0;
+		}
+		//left horizontal point
+		else if (col < vpcol) {
+			int temp = col + 1;
+			while (temp < vpcol) {
+				if (data[row][temp] >= height) return 0.0;
+				temp++;
+			}
+			return 1.0;
+		}
+		//right horizontal point
+		else {
+			int temp = vpcol + 1;
+			while (temp < col) {
+				if (data[row][temp] >= height) return 0.0;
+				temp++;
+			}
+			return 1.0;
+		}
+	}
+	else if (col == vpcol) {
+		if (row < vprow) {
+			int temp = row + 1;
+			while (temp < vprow) {
+				if (data[temp][col] >= height) return 0.0;
+				temp++;
+			}
+			return 1.0;
+		}
+		else {
+			int temp = vprow + 1;
+			while (temp < row) {
+				if (data[temp][col] >= height) return 0.0;
+				temp++;
+			}
+			return 1.0;
+		}
+	}
+
+	//edge case 2: points on the two vertical lines next to view point
+	else if (abs(col - vpcol) == 1) { 
+		if (abs(row - vprow) == 1) {
+			return 1.0;
+		}
+		else if (row > vprow) {
+			//if lower points have no data then assume that the point is visible
+			if (data[row-1][col] == NODATA_value || data[row-1][vpcol] == NODATA_value) {
+				return 1.0;
+			}
+			float avg = (data[row-1][col] + data[row-1][vpcol])/2.0;
+			return (height > avg ? 1.0 : 0.0);
+		}
+		else {
+			if (data[row+1][col] == NODATA_value || data[row+1][vpcol] == NODATA_value) {
+				return 1.0;
+			}
+			float avg = (data[row+1][col] + data[row+1][vpcol])/2.0;
+			return (height > avg ? 1.0 : 0.0);
+		}
+	}
+
+	vector<float> rIntersects;
+
+	//initializing the y-coord for intersecting points relative to the viewpoint
+	for (int i = 1; i <= abs(vpcol - col) - 1; i++) {
+		rIntersects.push_back((row - vprow) * i/(col - vpcol));
+	}
+
+	//right points to view point
+	int index = 0;
+	if (col > vpcol) {
+		while (index < rIntersects.size()) {
+			float heightIntersect = columnInterpolate(vpcol + index + 1, vprow + rIntersects[index]);
+			if (heightIntersect == NODATA_value) return NODATA_value;
+			if (heightIntersect >= height) return 0.0;
+			index++;
+		}
+		return 1.0;
+	}
+	//left points to view points
+	else {
+		while (index < rIntersects.size()) {
+			float heightIntersect = columnInterpolate(vpcol - index - 1, vprow + rIntersects[index]);
+			if (heightIntersect == NODATA_value) return NODATA_value;
+			if (heightIntersect >= height) return 0.0;
+			index++;
+		}
+		return 1.0;
+	}		
 }
 
 //print both the header and the values of the grid
@@ -353,6 +453,21 @@ void Grid::printValues() {
 }
 
 /* UTILITY FUNCTIONS */
+
+//find the height of point x (row) by interpolating its two neighbors in the same column
+float Grid::columnInterpolate(int col, float x) {
+	float upperHeight = data[(int)ceil(x)][col],
+		  lowerHeight = data[(int)floor(x)][col];
+
+	if (upperHeight == NODATA_value || lowerHeight == NODATA_value) {
+		return (upperHeight == NODATA_value ? lowerHeight : upperHeight);
+	}
+
+	float slope = upperHeight - lowerHeight,
+		  intercept = upperHeight - slope * ceil(x);
+
+	return slope * x + intercept;
+}
 
 //scan for number in a given string
 string Grid::numberTokenize(const string &input) {

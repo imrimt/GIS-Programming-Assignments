@@ -20,9 +20,11 @@
 #include <cstddef>
 #include <time.h>
 #include <vector>
+#include <cmath>
 
 const float NOFLOW_VALUE = -1;
 const float INITIAL_ACCUMULATION = 0.0;
+const float INITIAL_VIEW = -1.0;
 
 using namespace std;
 
@@ -79,11 +81,12 @@ class Grid {
 		float multiplier;
 
 		float computeFASinglePoint(int r, int c);
+		float columnInterpolate(int col, float x);
 
 		string numberTokenize(const string &input);
 		void resetFAData();
 		void printInfo();
-		bool isVisible(int vprow, int vpcol, int row, int col);
+		float isVisible(int vprow, int vpcol, int row, int col);
 		bool isInteger(string str);
 		bool inGrid(int x, int y) const;
 		int encodingDirection(int r, int c);
