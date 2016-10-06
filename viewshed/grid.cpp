@@ -70,7 +70,8 @@ bool Grid::readGridFromFile(string gridFileName) {
 
 	getline(myFile,line);
 	header.push_back(line);
-	NODATA_value = stof(numberTokenize(line));
+	// NODATA_value = stof(numberTokenize(line));
+	NODATA_value = 0;
 
 	//start allocating memory to the grid data 2D-array
 	data = new (nothrow) float*[nRows];
@@ -119,10 +120,13 @@ void Grid::compute_viewshed(Grid &viewshedGrid, int vprow, int vpcol) {
 	for (int i = 0; i < viewshedGrid.getNRows(); i++) {
 		for (int j = 0; j < viewshedGrid.getNCols(); j++) {
 			if (data[i][j] == NODATA_value) {
+				// cout << "result of point (" << i << "," << j << ") is " << NODATA_value << endl;
 				viewshedGrid.setData(i, j, NODATA_value);
 			}
 			else {
-				viewshedGrid.setData(i, j, isVisible(vprow, vpcol, i, j));
+				float result = isVisible(vprow, vpcol, i , j);
+				// cout << "result of point (" << i << "," << j << ") is " << result << endl;
+				viewshedGrid.setData(i, j, result);
 			}
 		}
 	}
@@ -139,8 +143,6 @@ void Grid::multiply(float multiplier) {
 
 //compute flow direction for all points
 void Grid::computeFD(Grid &FDgrid) {
-
-	// Grid FDgrid(nRows, nCols, NODATA_value);
 	FDgrid.setHeader(header);
 
 	for (int i = 0; i < nRows; i++) {
@@ -155,7 +157,6 @@ void Grid::computeFD(Grid &FDgrid) {
 			for (int dx = -1; dx <= 1; dx++) {
 				for (int dy = -1; dy <= 1; dy++) {
 					if (dx || dy) {
-						// cout << "direction " << dx << " and " << dy << endl;
 						if (inGrid(i + dx, j + dy)) {
 							float temp = data[i+dx][j+dy];
 							if (temp == NODATA_value || temp >= data[i][j]) {
@@ -166,8 +167,6 @@ void Grid::computeFD(Grid &FDgrid) {
 							}
 							else {
 								if (data[i][j] - temp > max) {
-									// cout << "data at (" << i << ", " << j << ") = " << data[i][j] << endl;
-									// cout << "temp = " << temp << endl;
 									max = (float)data[i][j] - temp;
 									maxR = dx;
 									maxC = dy;
@@ -313,16 +312,19 @@ string Grid::writeToFile(string path) {
 //values: NODATA_value, 1.0 for true, 0.0 for false
 float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 
-	// cout << "am I seg faulting here?" << endl;
-
 	//check to make sure that the incoming point is in grid
 	if (inGrid(row, col) == false) return NODATA_value;
 
-	// float result = 0.0;
-	float height = data[row][col];
+	float vpheight = data[vprow][vpcol];
+
+	// float height = data[row][col];
+	float angle = verticalAngle(vprow, vpcol, row, col); 
 
 	//edge case 1: points on the verticle/horizontal lines of coordinates
+
+	//points on same horizontal line
 	if (row == vprow) {
+		// cout << "horizontal" << endl;
 		if (col == vpcol) {
 			return 1.0;
 		}
@@ -330,7 +332,7 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 		else if (col < vpcol) {
 			int temp = col + 1;
 			while (temp < vpcol) {
-				if (data[row][temp] >= height) return 0.0;
+				if (verticalAngle(vprow, vpcol, row, temp) >= angle) return 0.0;
 				temp++;
 			}
 			return 1.0;
@@ -339,25 +341,30 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 		else {
 			int temp = vpcol + 1;
 			while (temp < col) {
-				if (data[row][temp] >= height) return 0.0;
+				if (verticalAngle(vprow, vpcol, row, temp) >= angle) return 0.0;
 				temp++;
 			}
 			return 1.0;
 		}
 	}
+
+	//points on same vertical line
 	else if (col == vpcol) {
+		// cout << "vertical" << endl;
+		//upper point
 		if (row < vprow) {
 			int temp = row + 1;
 			while (temp < vprow) {
-				if (data[temp][col] >= height) return 0.0;
+				if (verticalAngle(vprow, vpcol, temp, col) >= angle) return 0.0;
 				temp++;
 			}
 			return 1.0;
 		}
+		//lower point
 		else {
 			int temp = vprow + 1;
 			while (temp < row) {
-				if (data[temp][col] >= height) return 0.0;
+				if (verticalAngle(vprow, vpcol, temp, col) >= angle) return 0.0;
 				temp++;
 			}
 			return 1.0;
@@ -366,23 +373,37 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 
 	//edge case 2: points on the two vertical lines next to view point
 	else if (abs(col - vpcol) == 1) { 
+		// cout << "edge case 2" << endl;
 		if (abs(row - vprow) == 1) {
 			return 1.0;
 		}
 		else if (row > vprow) {
 			//if lower points have no data then assume that the point is visible
+			float avg = 0.0;
 			if (data[row-1][col] == NODATA_value || data[row-1][vpcol] == NODATA_value) {
+				avg = data[row-1][col] == NODATA_value ? data[row-1][vpcol] : data[row-1][col];
+			}
+			else {
+				avg = (float)(data[row-1][col] + data[row-1][vpcol])/2.0;
+			}
+			if (avg == NODATA_value) {
 				return 1.0;
 			}
-			float avg = (data[row-1][col] + data[row-1][vpcol])/2.0;
-			return (height > avg ? 1.0 : 0.0);
+			float temp = verticalAngle(vpheight, avg, distance(vprow, vpcol, row - 1, (float)(col + vpcol)/2.0));
+			return (angle > temp ? 1.0 : 0.0);
 		}
 		else {
+			float avg = 0.0;
 			if (data[row+1][col] == NODATA_value || data[row+1][vpcol] == NODATA_value) {
+				avg = data[row+1][col] == NODATA_value ? data[row+1][vpcol] : data[row+1][col];
+			}
+			else {
+				avg = (float)(data[row+1][col] + data[row+1][vpcol])/2.0;
+			}
+			if (avg == NODATA_value) {
 				return 1.0;
 			}
-			float avg = (data[row+1][col] + data[row+1][vpcol])/2.0;
-			return (height > avg ? 1.0 : 0.0);
+			return (angle > verticalAngle(vpheight, avg, distance(vprow, vpcol, row + 1, (float)(col + vpcol) / 2.0)) ? 1.0 : 0.0);
 		}
 	}
 
@@ -390,16 +411,26 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 
 	//initializing the y-coord for intersecting points relative to the viewpoint
 	for (int i = 1; i <= abs(vpcol - col) - 1; i++) {
-		rIntersects.push_back((row - vprow) * i/(col - vpcol));
+		rIntersects.push_back((float)(row - vprow) * i/(float)(col - vpcol));
 	}
 
-	//right points to view point
 	int index = 0;
+
+	//right points to view point
 	if (col > vpcol) {
+			// if (row == 204 && col == 127) {
+				// cout << "rIntersects[index] = " << rIntersects[index] << " at index " << index << endl;
+				// cout << "checking " << vprow + rIntersects[index] << " at index " << index << endl;
+			// }
 		while (index < rIntersects.size()) {
 			float heightIntersect = columnInterpolate(vpcol + index + 1, vprow + rIntersects[index]);
-			if (heightIntersect == NODATA_value) return NODATA_value;
-			if (heightIntersect >= height) return 0.0;
+			if (heightIntersect == NODATA_value) {
+				index++;
+				continue;
+			}
+			if (verticalAngle(vpheight, heightIntersect, distance(vprow, vpcol, vprow - rIntersects[index], vpcol + index + 1)) >= angle) {
+				return 0.0;
+			}
 			index++;
 		}
 		return 1.0;
@@ -407,9 +438,14 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 	//left points to view points
 	else {
 		while (index < rIntersects.size()) {
-			float heightIntersect = columnInterpolate(vpcol - index - 1, vprow + rIntersects[index]);
-			if (heightIntersect == NODATA_value) return NODATA_value;
-			if (heightIntersect >= height) return 0.0;
+			float heightIntersect = columnInterpolate(vpcol - index - 1, vprow - rIntersects[index]);
+			if (heightIntersect == NODATA_value) {
+				index++;
+				continue;
+			}
+			if (verticalAngle(vpheight, heightIntersect, distance(vprow, vpcol, vprow - rIntersects[index], vpcol - index - 1)) >= angle) {
+				return 0.0;
+			}
 			index++;
 		}
 		return 1.0;
@@ -456,6 +492,7 @@ void Grid::printValues() {
 
 //find the height of point x (row) by interpolating its two neighbors in the same column
 float Grid::columnInterpolate(int col, float x) {
+
 	float upperHeight = data[(int)ceil(x)][col],
 		  lowerHeight = data[(int)floor(x)][col];
 
@@ -463,10 +500,46 @@ float Grid::columnInterpolate(int col, float x) {
 		return (upperHeight == NODATA_value ? lowerHeight : upperHeight);
 	}
 
+	// if (x == ceil(x)) {
+	// 	return upperHeight;
+	// }
+
 	float slope = upperHeight - lowerHeight,
 		  intercept = upperHeight - slope * ceil(x);
 
 	return slope * x + intercept;
+}
+
+//find the distance between two points (vprow, vpcol) and (row, col)
+float Grid::distance(float vprow, float vpcol, float row, float col) {
+	if (vprow == row && vpcol == col) return INVALID_VALUE;
+	return sqrt(pow(vprow - row, 2) + pow(vpcol - col, 2));
+}
+
+//find the vertical angle between two points (vprow, vpcol) and (row, col)
+float Grid::verticalAngle(int vprow, int vpcol, int row, int col) {
+
+	if (!(inGrid(vprow, vpcol) && inGrid(row, col))) {
+		return INVALID_VALUE;
+	}
+
+	float height = data[row][col],
+	      vpheight = data[vprow][vpcol];
+
+	if (height == NODATA_value || vpheight == NODATA_value) {
+		return NODATA_value;
+	}
+
+	float d = distance(vprow, vpcol, row, col);
+	if (d == INVALID_VALUE) return INVALID_VALUE;
+		
+	return atan((height - vpheight)/d);
+}
+
+//find the vertical angle between two points given height and distance
+float Grid::verticalAngle(float vpheight, float height, float distance) {
+	if (distance == 0) return INVALID_VALUE;
+	return atan((height - vpheight) / distance);
 }
 
 //scan for number in a given string

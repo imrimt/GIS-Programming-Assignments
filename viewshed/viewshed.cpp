@@ -29,22 +29,23 @@ bool isInteger(string str);
 
 int main(int argc, char* argv[]) {
 
-	if (argc != 4) {
+	if (argc != 5) {
 		cout << "Invalid number of arguments. Please make sure the command is the following format: " << endl;
-		cout << "[path-to-executable-file] [grid-file-to-read] [flow-direction-file-to-write] [flow-accumulation-file-to-write]" << endl;
+		cout << "./viewshed [grid-file-to-read] [file-to-write] x-coord y-coord" << endl;
 		exit(1);
 	}
 
 	string input = argv[1];
+	string output = argv[2];
 	string inputPath;
 	string fileName;
 
-	if (isInteger(argv[2]) == false || isInteger(argv[3]) == false) {
+	if (isInteger(argv[3]) == false || isInteger(argv[4]) == false) {
 		cout << "Invalid argument for coordinates. Please make sure it's a valid integer" << endl;
 		exit(1);
 	}
 
-	int vprow = stoi(argv[2]), vpcol = stoi(argv[3]);
+	int vprow = stoi(argv[3]), vpcol = stoi(argv[4]);
 
 	if (input.find_last_of("/") != string::npos) {
 		int pos = input.find_last_of("/");
@@ -70,7 +71,9 @@ int main(int argc, char* argv[]) {
 
 	grid.compute_viewshed(viewshedGrid, vprow, vpcol);
 
-	viewshedGrid.printGrid();
+	//viewshedGrid.printGrid();
+
+	cout << "write to " << viewshedGrid.writeToFile(inputPath + "/" + output) << endl;
 
 	//cleanup memory
 	grid.freeGridData();

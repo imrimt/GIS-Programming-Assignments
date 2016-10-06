@@ -25,6 +25,7 @@
 const float NOFLOW_VALUE = -1;
 const float INITIAL_ACCUMULATION = 0.0;
 const float INITIAL_VIEW = -1.0;
+const float INVALID_VALUE = -1.0;
 
 using namespace std;
 
@@ -82,6 +83,9 @@ class Grid {
 
 		float computeFASinglePoint(int r, int c);
 		float columnInterpolate(int col, float x);
+		float distance(float vprow, float vpcol, float row, float col);
+		float verticalAngle(int vprow, int vpcol, int row, int col);
+		float verticalAngle(float vpheight, float height, float distance);
 
 		string numberTokenize(const string &input);
 		void resetFAData();
@@ -90,6 +94,7 @@ class Grid {
 		bool isInteger(string str);
 		bool inGrid(int x, int y) const;
 		int encodingDirection(int r, int c);
+
 
 		vector<string> header;
 
