@@ -82,6 +82,7 @@ class Grid {
 		float multiplier;
 
 		float computeFASinglePoint(int r, int c);
+		float rowInterpolate(int row, float y);
 		float columnInterpolate(int col, float x);
 		float distance(float vprow, float vpcol, float row, float col);
 		float verticalAngle(int vprow, int vpcol, int row, int col);
@@ -94,7 +95,6 @@ class Grid {
 		bool isInteger(string str);
 		bool inGrid(int x, int y) const;
 		int encodingDirection(int r, int c);
-
 
 		vector<string> header;
 

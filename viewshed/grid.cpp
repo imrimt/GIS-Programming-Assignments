@@ -364,11 +364,11 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 		//lower point
 		else {
 			int temp = vprow + 1;
-			cout << "looking at point (" << row << "," << col << ")" << endl;
+			// cout << "looking at point (" << row << "," << col << ")" << endl;
 			while (temp < row) {
 				float result = verticalAngle(vprow, vpcol, temp, col);
-				cout << "vertical angle between (" << vprow << "," << vpcol << ") and (" << temp << "," << col << ") is " << result << endl;
-				if (verticalAngle(vprow, vpcol, temp, col) > angle) return 0.0;
+				// cout << "vertical angle between (" << vprow << "," << vpcol << ") and (" << temp << "," << col << ") is " << result << endl;
+				if (result > angle) return 0.0;
 				temp++;
 			}
 			return 1.0;
@@ -376,39 +376,78 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 	}
 
 	//edge case 2: points on the two vertical lines next to view point
-	else if (abs(col - vpcol) == 1) { 
+	else if (abs(col - vpcol) == 1) {
+		vector<float> rIntersects;
+		for (int i = 1; i <= abs(vprow - row); i++) {
+			rIntersects.push_back((float)(col - vpcol) * i / (float)(row - vprow));
+		} 
+		int index = 0;
 		// cout << "edge case 2" << endl;
 		if (abs(row - vprow) == 1) {
 			return 1.0;
 		}
+
+		//points at higher row
 		else if (row > vprow) {
+			// cout << "size of rIntersects " << rIntersects.size() << endl;
 			//if lower points have no data then assume that the point is visible
-			float avg = 0.0;
-			if (data[row-1][col] == NODATA_value || data[row-1][vpcol] == NODATA_value) {
-				avg = data[row-1][col] == NODATA_value ? data[row-1][vpcol] : data[row-1][col];
+			// float avg = 0.0;
+			// if (data[row-1][col] == NODATA_value || data[row-1][vpcol] == NODATA_value) {
+			// 	avg = data[row-1][col] == NODATA_value ? data[row-1][vpcol] : data[row-1][col];
+			// }
+			// else {
+			// 	avg = (float)(data[row-1][col] + data[row-1][vpcol])/2.0;
+			// }
+			// if (avg == NODATA_value) {
+			// 	return 1.0;
+			// }
+			// float temp = verticalAngle(vpheight, avg, distance(vprow, vpcol, row - 1, (float)(col + vpcol)/2.0));
+			// return (angle >= temp ? 1.0 : 0.0);
+
+			while (index < rIntersects.size()) {
+				float heightIntersect = rowInterpolate(vprow + index + 1, vpcol + rIntersects[index]);
+				if (heightIntersect == NODATA_value) {
+					index++;
+					continue;
+				}
+				float temp = verticalAngle(vpheight, heightIntersect, distance(vprow, vpcol, vprow + index + 1, vpcol + rIntersects[index]));
+				if (temp > angle) {
+					return 0.0;
+				}
+				index++;
 			}
-			else {
-				avg = (float)(data[row-1][col] + data[row-1][vpcol])/2.0;
-			}
-			if (avg == NODATA_value) {
-				return 1.0;
-			}
-			float temp = verticalAngle(vpheight, avg, distance(vprow, vpcol, row - 1, (float)(col + vpcol)/2.0));
-			return (angle >= temp ? 1.0 : 0.0);
+			return 1.0;
+
 		}
+
+		//points at lower row
 		else {
-			float avg = 0.0;
-			if (data[row+1][col] == NODATA_value || data[row+1][vpcol] == NODATA_value) {
-				avg = data[row+1][col] == NODATA_value ? data[row+1][vpcol] : data[row+1][col];
+			// float avg = 0.0;
+			// if (data[row+1][col] == NODATA_value || data[row+1][vpcol] == NODATA_value) {
+			// 	avg = data[row+1][col] == NODATA_value ? data[row+1][vpcol] : data[row+1][col];
+			// }
+			// else {
+			// 	avg = (float)(data[row+1][col] + data[row+1][vpcol])/2.0;
+			// }
+			// if (avg == NODATA_value) {
+			// 	return 1.0;
+			// }
+			// float temp = verticalAngle(vpheight, avg, distance(vprow, vpcol, row + 1, (float)(col + vpcol) / 2.0));
+			// return (angle >= temp ? 1.0 : 0.0);
+
+			while (index < rIntersects.size()) {
+				float heightIntersect = rowInterpolate(vprow - index - 1, vpcol - rIntersects[index]);
+				if (heightIntersect == NODATA_value) {
+					index++;
+					continue;
+				}
+				float temp = verticalAngle(vpheight, heightIntersect, distance(vprow, vpcol, vprow - index - 1, vpcol - rIntersects[index]));
+				if (temp > angle) {
+					return 0.0;
+				}
+				index++;
 			}
-			else {
-				avg = (float)(data[row+1][col] + data[row+1][vpcol])/2.0;
-			}
-			if (avg == NODATA_value) {
-				return 1.0;
-			}
-			float temp = verticalAngle(vpheight, avg, distance(vprow, vpcol, row + 1, (float)(col + vpcol) / 2.0));
-			return (angle >= temp ? 1.0 : 0.0);
+			return 1.0;
 		}
 	}
 
@@ -434,6 +473,9 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 				continue;
 			}
 			float temp = verticalAngle(vpheight, heightIntersect, distance(vprow, vpcol, vprow + rIntersects[index], vpcol + index + 1));
+			// if (col == 2) {
+				// cout << "angle = " << angle << " with temp = " << temp << endl;
+			// }
 			if (temp > angle) {
 				return 0.0;
 			}
@@ -507,17 +549,25 @@ float Grid::columnInterpolate(int col, float x) {
 		return (upperHeight == NODATA_value ? lowerHeight : upperHeight);
 	}
 
-	// if (x == ceil(x)) {
-	// 	return upperHeight;
-	// }
-
-	// cout << "upperHeight = " << upperHeight << endl;
-	// cout << "lowerHeight = " << lowerHeight << endl;
-
 	float slope = upperHeight - lowerHeight,
 		  intercept = upperHeight - slope * ceil(x);
 
 	return slope * x + intercept;
+}
+
+//find the height of point y (col) by interpolating its two neighbors in the same row
+float Grid::rowInterpolate(int row, float y) {
+	float rightHeight = data[row][(int)ceil(y)],
+		  leftHeight = data[row][(int)floor(y)];
+
+	if (rightHeight == NODATA_value || leftHeight == NODATA_value) {
+		return (rightHeight == NODATA_value ? leftHeight : rightHeight);
+	}
+
+	float slope = rightHeight - leftHeight,
+		  intercept = rightHeight - slope * ceil(y);
+
+	return slope * y + intercept;
 }
 
 //find the distance between two points (vprow, vpcol) and (row, col)
@@ -543,13 +593,13 @@ float Grid::verticalAngle(int vprow, int vpcol, int row, int col) {
 	float d = distance(vprow, vpcol, row, col);
 	if (d == INVALID_VALUE) return INVALID_VALUE;
 		
-	return atan((height - vpheight)/d);
+	return atan((float)(height - vpheight)/(float)d);
 }
 
 //find the vertical angle between two points given height and distance
 float Grid::verticalAngle(float vpheight, float height, float distance) {
 	if (distance == 0) return INVALID_VALUE;
-	return atan((height - vpheight) / distance);
+	return atan((float)(height - vpheight) / (float)distance);
 }
 
 //scan for number in a given string
