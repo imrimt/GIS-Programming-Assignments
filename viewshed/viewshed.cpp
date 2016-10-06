@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
 
 	//viewshedGrid.printGrid();
 
-	cout << "write to " << viewshedGrid.writeToFile(inputPath + "/" + output) << endl;
+	cout << "write to " << viewshedGrid.writeToFile(inputPath + output) << endl;
 
 	//cleanup memory
 	grid.freeGridData();
