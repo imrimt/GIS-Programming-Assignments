@@ -70,8 +70,8 @@ bool Grid::readGridFromFile(string gridFileName) {
 
 	getline(myFile,line);
 	header.push_back(line);
-	// NODATA_value = stof(numberTokenize(line));
-	NODATA_value = 0;
+	NODATA_value = stof(numberTokenize(line));
+	// NODATA_value = 0;
 
 	//start allocating memory to the grid data 2D-array
 	data = new (nothrow) float*[nRows];
@@ -320,6 +320,8 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 	// float height = data[row][col];
 	float angle = verticalAngle(vprow, vpcol, row, col); 
 
+	// cout << "looking at point (" << row << "," << col << ")" << endl;
+
 	//edge case 1: points on the verticle/horizontal lines of coordinates
 
 	//points on same horizontal line
@@ -332,7 +334,7 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 		else if (col < vpcol) {
 			int temp = col + 1;
 			while (temp < vpcol) {
-				if (verticalAngle(vprow, vpcol, row, temp) >= angle) return 0.0;
+				if (verticalAngle(vprow, vpcol, row, temp) > angle) return 0.0;
 				temp++;
 			}
 			return 1.0;
@@ -341,7 +343,7 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 		else {
 			int temp = vpcol + 1;
 			while (temp < col) {
-				if (verticalAngle(vprow, vpcol, row, temp) >= angle) return 0.0;
+				if (verticalAngle(vprow, vpcol, row, temp) > angle) return 0.0;
 				temp++;
 			}
 			return 1.0;
@@ -355,7 +357,7 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 		if (row < vprow) {
 			int temp = row + 1;
 			while (temp < vprow) {
-				if (verticalAngle(vprow, vpcol, temp, col) >= angle) return 0.0;
+				if (verticalAngle(vprow, vpcol, temp, col) > angle) return 0.0;
 				temp++;
 			}
 			return 1.0;
@@ -363,8 +365,11 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 		//lower point
 		else {
 			int temp = vprow + 1;
+			cout << "looking at point (" << row << "," << col << ")" << endl;
 			while (temp < row) {
-				if (verticalAngle(vprow, vpcol, temp, col) >= angle) return 0.0;
+				float result = verticalAngle(vprow, vpcol, temp, col);
+				cout << "vertical angle between (" << vprow << "," << vpcol << ") and (" << temp << "," << col << ") is " << result << endl;
+				if (verticalAngle(vprow, vpcol, temp, col) > angle) return 0.0;
 				temp++;
 			}
 			return 1.0;
@@ -390,7 +395,7 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 				return 1.0;
 			}
 			float temp = verticalAngle(vpheight, avg, distance(vprow, vpcol, row - 1, (float)(col + vpcol)/2.0));
-			return (angle > temp ? 1.0 : 0.0);
+			return (angle >= temp ? 1.0 : 0.0);
 		}
 		else {
 			float avg = 0.0;
@@ -404,7 +409,7 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 				return 1.0;
 			}
 			float temp = verticalAngle(vpheight, avg, distance(vprow, vpcol, row + 1, (float)(col + vpcol) / 2.0));
-			return (angle > temp ? 1.0 : 0.0);
+			return (angle >= temp ? 1.0 : 0.0);
 		}
 	}
 
@@ -430,7 +435,7 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 				continue;
 			}
 			float temp = verticalAngle(vpheight, heightIntersect, distance(vprow, vpcol, vprow + rIntersects[index], vpcol + index + 1));
-			if (temp >= angle) {
+			if (temp > angle) {
 				return 0.0;
 			}
 			index++;
@@ -446,7 +451,7 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 				continue;
 			}
 			float temp = verticalAngle(vpheight, heightIntersect, distance(vprow, vpcol, vprow - rIntersects[index], vpcol - index - 1));
-			if (temp >= angle) {
+			if (temp > angle) {
 				return 0.0;
 			}
 			index++;
@@ -506,6 +511,9 @@ float Grid::columnInterpolate(int col, float x) {
 	// if (x == ceil(x)) {
 	// 	return upperHeight;
 	// }
+
+	// cout << "upperHeight = " << upperHeight << endl;
+	// cout << "lowerHeight = " << lowerHeight << endl;
 
 	float slope = upperHeight - lowerHeight,
 		  intercept = upperHeight - slope * ceil(x);
