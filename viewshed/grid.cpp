@@ -225,7 +225,6 @@ float Grid::computeFAforPoint(int i, int j, const Grid &FDgrid, const Grid &FAgr
 
 //compute flow accumation for all points using quadratic recursion
 void Grid::computeFAslow(Grid &FAgrid, const Grid &FDgrid) {
-	// Grid FAgrid(nRows, nCols, NODATA_value);
 	FAgrid.resetFAData();
 	FAgrid.setHeader(header);
 
