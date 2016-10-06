@@ -403,7 +403,8 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 			if (avg == NODATA_value) {
 				return 1.0;
 			}
-			return (angle > verticalAngle(vpheight, avg, distance(vprow, vpcol, row + 1, (float)(col + vpcol) / 2.0)) ? 1.0 : 0.0);
+			float temp = verticalAngle(vpheight, avg, distance(vprow, vpcol, row + 1, (float)(col + vpcol) / 2.0));
+			return (angle > temp ? 1.0 : 0.0);
 		}
 	}
 
@@ -428,7 +429,8 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 				index++;
 				continue;
 			}
-			if (verticalAngle(vpheight, heightIntersect, distance(vprow, vpcol, vprow - rIntersects[index], vpcol + index + 1)) >= angle) {
+			float temp = verticalAngle(vpheight, heightIntersect, distance(vprow, vpcol, vprow + rIntersects[index], vpcol + index + 1));
+			if (temp >= angle) {
 				return 0.0;
 			}
 			index++;
@@ -443,7 +445,8 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 				index++;
 				continue;
 			}
-			if (verticalAngle(vpheight, heightIntersect, distance(vprow, vpcol, vprow - rIntersects[index], vpcol - index - 1)) >= angle) {
+			float temp = verticalAngle(vpheight, heightIntersect, distance(vprow, vpcol, vprow - rIntersects[index], vpcol - index - 1));
+			if (temp >= angle) {
 				return 0.0;
 			}
 			index++;
