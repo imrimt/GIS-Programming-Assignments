@@ -120,8 +120,10 @@ void Grid::compute_viewshed(Grid &viewshedGrid, int vprow, int vpcol) {
 	for (int i = 0; i < viewshedGrid.getNRows(); i++) {
 		for (int j = 0; j < viewshedGrid.getNCols(); j++) {
 			if (data[i][j] == NODATA_value) {
-				// cout << "result of point (" << i << "," << j << ") is " << NODATA_value << endl;
-				viewshedGrid.setData(i, j, NODATA_value);
+				if (i == 100) {
+					// cout << "looking at point (" << i << "," << j << ") that has no data " << endl;
+				}
+				viewshedGrid.setData(i, j, 0.0);
 			}
 			else {
 				float result = isVisible(vprow, vpcol, i , j);
@@ -312,28 +314,35 @@ string Grid::writeToFile(string path) {
 float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 
 	//check to make sure that the incoming point is in grid
-	if (inGrid(row, col) == false) return NODATA_value;
-
+	if (inGrid(row, col) == false) {
+		// cout << "looking at point (" << row << "," << col << ") that is OUT OF BOUND" << endl;
+		return 0.0;
+	}
+	if (vprow == row && vpcol == col) {
+		// cout << "looking at point (" << row << "," << col << ") MYSELF" << endl;
+		return 1.0;
+	}
 	float vpheight = data[vprow][vpcol];
 
 	// float height = data[row][col];
 	float angle = verticalAngle(vprow, vpcol, row, col); 
 
-	// cout << "looking at point (" << row << "," << col << ")" << endl;
-
+	if (angle == INVALID_VALUE) {
+		// cout << "looking at point (" << row << "," << col << ") with invalid angle" << endl;
+		return 0.0;
+	}
 	//edge case 1: points on the verticle/horizontal lines of coordinates
 
 	//points on same horizontal line
 	if (row == vprow) {
-		// cout << "horizontal" << endl;
-		if (col == vpcol) {
-			return 1.0;
-		}
+		// cout << "looking at point (" << row << "," << col << ") on horizontal" << endl;
+
 		//left horizontal point
-		else if (col < vpcol) {
+		if (col < vpcol) {
 			int temp = col + 1;
 			while (temp < vpcol) {
-				if (verticalAngle(vprow, vpcol, row, temp) > angle) return 0.0;
+				float result = verticalAngle(vprow, vpcol, row, temp);
+				if (result > angle) return 0.0;
 				temp++;
 			}
 			return 1.0;
@@ -351,8 +360,8 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 
 	//points on same vertical line
 	else if (col == vpcol) {
-		// cout << "vertical" << endl;
-		//upper point
+		// cout << "looking at point (" << row << "," << col << ") on vertical" << endl;
+		//point at lower row 
 		if (row < vprow) {
 			int temp = row + 1;
 			while (temp < vprow) {
@@ -361,7 +370,7 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 			}
 			return 1.0;
 		}
-		//lower point
+		//point at higher row
 		else {
 			int temp = vprow + 1;
 			// cout << "looking at point (" << row << "," << col << ")" << endl;
@@ -378,33 +387,21 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 	//edge case 2: points on the two vertical lines next to view point
 	else if (abs(col - vpcol) == 1) {
 		vector<float> rIntersects;
-		for (int i = 1; i <= abs(vprow - row); i++) {
+		for (int i = 1; i < abs(vprow - row); i++) {
 			rIntersects.push_back((float)(col - vpcol) * i / (float)(row - vprow));
 		} 
 		int index = 0;
-		// cout << "edge case 2" << endl;
 		if (abs(row - vprow) == 1) {
+			// cout << "looking at point (" << row << "," << col << ") on surrounding corners" << endl;
 			return 1.0;
 		}
 
 		//points at higher row
 		else if (row > vprow) {
-			// cout << "size of rIntersects " << rIntersects.size() << endl;
-			//if lower points have no data then assume that the point is visible
-			// float avg = 0.0;
-			// if (data[row-1][col] == NODATA_value || data[row-1][vpcol] == NODATA_value) {
-			// 	avg = data[row-1][col] == NODATA_value ? data[row-1][vpcol] : data[row-1][col];
-			// }
-			// else {
-			// 	avg = (float)(data[row-1][col] + data[row-1][vpcol])/2.0;
-			// }
-			// if (avg == NODATA_value) {
-			// 	return 1.0;
-			// }
-			// float temp = verticalAngle(vpheight, avg, distance(vprow, vpcol, row - 1, (float)(col + vpcol)/2.0));
-			// return (angle >= temp ? 1.0 : 0.0);
-
+			cout << "looking at point (" << row << "," << col << ") on higher row" << endl;
+			// if lower points have no data then assume that the point is visible
 			while (index < rIntersects.size()) {
+				cout << "new col = " << vpcol + rIntersects[index] << endl;
 				float heightIntersect = rowInterpolate(vprow + index + 1, vpcol + rIntersects[index]);
 				if (heightIntersect == NODATA_value) {
 					index++;
@@ -416,25 +413,14 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 				}
 				index++;
 			}
+			cout << "point (" << row << "," << col << ") is visible" << endl;
 			return 1.0;
 
 		}
 
 		//points at lower row
 		else {
-			// float avg = 0.0;
-			// if (data[row+1][col] == NODATA_value || data[row+1][vpcol] == NODATA_value) {
-			// 	avg = data[row+1][col] == NODATA_value ? data[row+1][vpcol] : data[row+1][col];
-			// }
-			// else {
-			// 	avg = (float)(data[row+1][col] + data[row+1][vpcol])/2.0;
-			// }
-			// if (avg == NODATA_value) {
-			// 	return 1.0;
-			// }
-			// float temp = verticalAngle(vpheight, avg, distance(vprow, vpcol, row + 1, (float)(col + vpcol) / 2.0));
-			// return (angle >= temp ? 1.0 : 0.0);
-
+			// cout << "looking at point (" << row << "," << col << ") on lower row" << endl;
 			while (index < rIntersects.size()) {
 				float heightIntersect = rowInterpolate(vprow - index - 1, vpcol - rIntersects[index]);
 				if (heightIntersect == NODATA_value) {
@@ -454,7 +440,7 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 	vector<float> rIntersects;
 
 	//initializing the y-coord for intersecting points relative to the viewpoint
-	for (int i = 1; i <= abs(vpcol - col) - 1; i++) {
+	for (int i = 1; i < abs(vpcol - col); i++) {
 		rIntersects.push_back((float)(row - vprow) * i/(float)(col - vpcol));
 	}
 
@@ -462,10 +448,7 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 
 	//right points to view point
 	if (col > vpcol) {
-			// if (row == 204 && col == 127) {
-				// cout << "rIntersects[index] = " << rIntersects[index] << " at index " << index << endl;
-				// cout << "checking " << vprow + rIntersects[index] << " at index " << index << endl;
-			// }
+		// cout << "looking at point (" << row << "," << col << ") on the far right" << endl;
 		while (index < rIntersects.size()) {
 			float heightIntersect = columnInterpolate(vpcol + index + 1, vprow + rIntersects[index]);
 			if (heightIntersect == NODATA_value) {
@@ -473,9 +456,6 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 				continue;
 			}
 			float temp = verticalAngle(vpheight, heightIntersect, distance(vprow, vpcol, vprow + rIntersects[index], vpcol + index + 1));
-			// if (col == 2) {
-				// cout << "angle = " << angle << " with temp = " << temp << endl;
-			// }
 			if (temp > angle) {
 				return 0.0;
 			}
@@ -483,8 +463,10 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 		}
 		return 1.0;
 	}
-	//left points to view points
+
+	//left points to view point
 	else {
+		// cout << "looking at point (" << row << "," << col << ") on the far left" << endl;
 		while (index < rIntersects.size()) {
 			float heightIntersect = columnInterpolate(vpcol - index - 1, vprow - rIntersects[index]);
 			if (heightIntersect == NODATA_value) {
@@ -492,6 +474,7 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 				continue;
 			}
 			float temp = verticalAngle(vpheight, heightIntersect, distance(vprow, vpcol, vprow - rIntersects[index], vpcol - index - 1));
+			// cout << "angle = " << angle << " with temp = " << temp << endl;
 			if (temp > angle) {
 				return 0.0;
 			}
@@ -587,7 +570,7 @@ float Grid::verticalAngle(int vprow, int vpcol, int row, int col) {
 	      vpheight = data[vprow][vpcol];
 
 	if (height == NODATA_value || vpheight == NODATA_value) {
-		return NODATA_value;
+		return INVALID_VALUE;
 	}
 
 	float d = distance(vprow, vpcol, row, col);

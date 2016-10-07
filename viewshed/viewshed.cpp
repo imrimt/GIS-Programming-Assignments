@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
 
 	// cout << endl;
 
-	Grid viewshedGrid(grid.getNRows(), grid.getNRows(), grid.getNODATA_value());
+	Grid viewshedGrid(grid.getNRows(), grid.getNCols(), grid.getNODATA_value());
 
 	grid.compute_viewshed(viewshedGrid, vprow, vpcol);
 
