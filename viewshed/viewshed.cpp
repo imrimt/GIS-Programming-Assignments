@@ -26,8 +26,15 @@
 #include "grid.h"
 
 bool isInteger(string str);
+void testFunction();
 
 int main(int argc, char* argv[]) {
+
+	//for testing purpose only
+	if (argc == 2 && strcmp(argv[1], "test") == 0) {
+		testFunction();
+		return 0;
+	}
 
 	if (argc != 5) {
 		cout << "Invalid number of arguments. Please make sure the command is the following format: " << endl;
@@ -63,15 +70,19 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 
-	// grid.printGrid();
-
-	// cout << endl;
-
 	Grid viewshedGrid(grid.getNRows(), grid.getNCols(), grid.getNODATA_value());
+
+	cout << "middle point: (" << grid.getNRows()/2 << "," << grid.getNCols()/2 << ")" << endl;
+
+	double start, end;
+
+	start = clock();
 
 	grid.compute_viewshed(viewshedGrid, vprow, vpcol);
 
-	//viewshedGrid.printGrid();
+	end = clock(); 
+
+	cout << "time to compute viewshed: " << (double)(end - start) / CLOCKS_PER_SEC << endl;
 
 	cout << "write to " << viewshedGrid.writeToFile(inputPath + output) << endl;
 
@@ -98,4 +109,28 @@ bool isInteger(string str) {
 	}
 
 	return true;
+}
+
+//function is written for testing purpose
+void testFunction() {
+	string path = "/Users/sngo/Desktop/GIS-TestGrids/";
+	string tests[] = {"brunsdem", "kaweah", "sierra", "portland_me", "usadem2", "eelriver", "washington"};
+	// string tests[] = {"brunsdem", "kaweah"};
+
+	Grid grid;
+
+	for (int i = 0; i < sizeof(tests)/sizeof(string); i++) {
+		grid.readGridFromFile(path + tests[i] + ".asc");
+		Grid viewshedGrid(grid.getNRows(), grid.getNCols(), grid.getNODATA_value());
+		cout << "middle point: (" << grid.getNRows()/2 << "," << grid.getNCols()/2 << ")" << endl;
+		double start, end;
+		start = clock();
+		grid.compute_viewshed(viewshedGrid, grid.getNRows()/2, grid.getNCols()/2);
+		end = clock(); 
+		cout << "time to compute viewshed " << tests[i] << ": " << (double)(end - start) / CLOCKS_PER_SEC << endl;
+		cout << "write to " << viewshedGrid.writeToFile(path + tests[i] + "vis.asc") << endl;
+		grid.freeGridData();
+	}
+
+	// grid.freeGridData();
 }
