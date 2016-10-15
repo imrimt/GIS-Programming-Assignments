@@ -1,5 +1,5 @@
 /*****************************************************************************
- File:   viewshet.cpp
+ File:   viewshed.cpp
  Author: Son D. Ngo
  Date:   September 2016
  
@@ -14,11 +14,11 @@
 	x-coord of source  
 	y-coord of source
  
- g++ -Wall -o flow flow.cpp grid.cpp
+ g++ -Wall -o viewshed viewshed.cpp grid.cpp
  ./viewshed [grid-file-to-read] [file-to-write] x-coord y-coord
  
  Running on dover: 
- g++ -std=c++11 -Wall -o flow flow.cpp grid.cpp
+ g++ -std=c++11 -Wall -o viewshed viewshed.cpp grid.cpp
  ./viewshed [grid-file-to-read] [file-to-write] x-coord y-coord
   
  ******************************************************************************/
@@ -104,7 +104,7 @@ bool isInteger(string str) {
 	if (start == '0' && str.length() > 1) {
 		return false;
 	}
-	for (int i = 1; i < str.length(); i++) {
+	for (unsigned int i = 1; i < str.length(); i++) {
 		if (isdigit(str[i]) == false) return false;
 	}
 
@@ -113,13 +113,13 @@ bool isInteger(string str) {
 
 //function is written for testing purpose
 void testFunction() {
-	string path = "/Users/sngo/Desktop/GIS-TestGrids/";
+	string path = "testGrids/";
 	string tests[] = {"brunsdem", "kaweah", "sierra", "portland_me", "usadem2", "eelriver", "washington"};
 	// string tests[] = {"brunsdem", "kaweah"};
 
 	Grid grid;
 
-	for (int i = 0; i < sizeof(tests)/sizeof(string); i++) {
+	for (unsigned int i = 0; i < sizeof(tests)/sizeof(string); i++) {
 		grid.readGridFromFile(path + tests[i] + ".asc");
 		Grid viewshedGrid(grid.getNRows(), grid.getNCols(), grid.getNODATA_value());
 		cout << "middle point: (" << grid.getNRows()/2 << "," << grid.getNCols()/2 << ")" << endl;
@@ -128,7 +128,7 @@ void testFunction() {
 		grid.compute_viewshed(viewshedGrid, grid.getNRows()/2, grid.getNCols()/2);
 		end = clock(); 
 		cout << "time to compute viewshed " << tests[i] << ": " << (double)(end - start) / CLOCKS_PER_SEC << endl;
-		cout << "write to " << viewshedGrid.writeToFile(path + tests[i] + "vis.asc") << endl;
+		// cout << "write to " << viewshedGrid.writeToFile(path + tests[i] + "vis.asc") << endl;
 		grid.freeGridData();
 	}
 

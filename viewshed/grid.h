@@ -1,7 +1,6 @@
 #ifndef GRID_H
 #define GRID_H
 
-/* include files */
 /*****************************************************************************
  File:   grid.h
  Author: Son D. Ngo
@@ -11,13 +10,16 @@
   
  ******************************************************************************/
 
+/* include files */
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <vector>
 #include <string>
+#include <string.h>
 #include <cstddef>
+#include <stdio.h>
 #include <time.h>
 #include <vector>
 #include <cmath>
@@ -76,14 +78,14 @@ class Grid {
 
 		float rowInterpolate(int row, float y);
 		float columnInterpolate(int col, float x);
-		float distance(float vprow, float vpcol, float row, float col);
+		// float distance(float vprow, float vpcol, float row, float col);
 		// float verticalAngle(float heightDistance, float distance);
 		float horizontalVisible(int vprow, int vpcol, int row, int col, float vpheight, float angle);
 		float verticalVisible(int vprow, int vpcol, int row, int col, float vpheight, float angle);
 
 		string numberTokenize(const string &input);
 		void printInfo();
-		float isVisible(int vprow, int vpcol, int row, int col, Grid* VAGridP);
+		float isVisible(int vprow, int vpcol, int row, int col);
 		bool isInteger(string str);
 		bool inGrid(int x, int y) const;
 		int encodingDirection(int r, int c);
