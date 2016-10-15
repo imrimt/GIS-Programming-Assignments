@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
 
 	cout << "middle point: (" << grid.getNRows()/2 << "," << grid.getNCols()/2 << ")" << endl;
 
-	double start, end;
+	float start, end;
 
 	start = clock();
 
@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
 
 	end = clock(); 
 
-	cout << "time to compute viewshed: " << (double)(end - start) / CLOCKS_PER_SEC << endl;
+	cout << "time to compute viewshed: " << (float)(end - start) / CLOCKS_PER_SEC << endl;
 
 	cout << "write to " << viewshedGrid.writeToFile(inputPath + output) << endl;
 
@@ -113,7 +113,7 @@ bool isInteger(string str) {
 
 //function is written for testing purpose
 void testFunction() {
-	string path = "testGrids/";
+	string path = "/Users/sngo/Desktop/GIS-TestGrids/";
 	string tests[] = {"brunsdem", "kaweah", "sierra", "portland_me", "usadem2", "eelriver", "washington"};
 	// string tests[] = {"brunsdem", "kaweah"};
 
@@ -123,11 +123,11 @@ void testFunction() {
 		grid.readGridFromFile(path + tests[i] + ".asc");
 		Grid viewshedGrid(grid.getNRows(), grid.getNCols(), grid.getNODATA_value());
 		cout << "middle point: (" << grid.getNRows()/2 << "," << grid.getNCols()/2 << ")" << endl;
-		double start, end;
+		float start, end;
 		start = clock();
 		grid.compute_viewshed(viewshedGrid, grid.getNRows()/2, grid.getNCols()/2);
 		end = clock(); 
-		cout << "time to compute viewshed " << tests[i] << ": " << (double)(end - start) / CLOCKS_PER_SEC << endl;
+		cout << "time to compute viewshed " << tests[i] << ": " << (float)(end - start) / CLOCKS_PER_SEC << endl;
 		// cout << "write to " << viewshedGrid.writeToFile(path + tests[i] + "vis.asc") << endl;
 		grid.freeGridData();
 	}
