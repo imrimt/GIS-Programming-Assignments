@@ -80,8 +80,8 @@ class Grid {
 		float columnInterpolate(int col, float x);
 		// float distance(float vprow, float vpcol, float row, float col);
 		// float verticalAngle(float heightDistance, float distance);
-		float horizontalVisible(int vprow, int vpcol, int row, int col, float vpheight, float angle);
-		float verticalVisible(int vprow, int vpcol, int row, int col, float vpheight, float angle);
+		float horizontalVisible(int vprow, int vpcol, int row, int col, float vpheight);
+		float verticalVisible(int vprow, int vpcol, int row, int col, float vpheight);
 
 		string numberTokenize(const string &input);
 		void printInfo();

@@ -44,6 +44,7 @@ bool Grid::readGridFromFile(string gridFileName) {
 
 	//return false if file path is invalid or file is unopenable
 	if (myFile.is_open() == false) {
+		cout << "Unable to open " << gridFileName << endl;
 		return false;
 	}
 
@@ -123,10 +124,6 @@ void Grid::compute_viewshed(Grid &viewshedGrid, int vprow, int vpcol) {
 		exit(1);
 	}
 
-	float start, end;
-
-	start = clock();
-
 	//point on the same horizontal line
 	for (int i = -1; i <= 1; i += 2) {
 		int index = vprow + i * 1;
@@ -141,16 +138,18 @@ void Grid::compute_viewshed(Grid &viewshedGrid, int vprow, int vpcol) {
 			}
 		}
 
-		float maxAngle = (float) (data[index][vpcol] - vpheight) / abs(vprow - index);
+		float maxAngle = (float) (data[index][vpcol] - vpheight) / abs(vprow - index),
+		      height;
 		index += i;
 
 		while (index >= 0 && index < nRows) {
-			if (data[index][vpcol] == NODATA_value) {
+			height = data[index][vpcol];
+			if (height == NODATA_value) {
 				viewshedGrid.setData(index, vpcol, 0.0);
 				index += i;
 				continue;
 			}
-			float tempAngle = (data[index][vpcol] - vpheight) / (float)abs(vprow - index);
+			float tempAngle = (height - vpheight) / (float)abs(vprow - index);
 			if (tempAngle > maxAngle) {
 				maxAngle = tempAngle;
 				viewshedGrid.setData(index, vpcol, 1.0);
@@ -161,12 +160,6 @@ void Grid::compute_viewshed(Grid &viewshedGrid, int vprow, int vpcol) {
 			index += i;
 		}
 	}
-
-	end = clock(); 
-
-	cout << "Time to fill horizontal line: " << (float)(end - start)/CLOCKS_PER_SEC << endl;
-
-	start = clock();
 
 	//point on the same vertical line
 	for (int i = -1; i <= 1; i += 2) {
@@ -182,16 +175,18 @@ void Grid::compute_viewshed(Grid &viewshedGrid, int vprow, int vpcol) {
 			}
 		}
 
-		float maxAngle = (float) (data[vprow][index] - vpheight) / abs(vpcol - index);
+		float maxAngle = (float) (data[vprow][index] - vpheight) / abs(vpcol - index),
+			  height;
 		index += i;
 
 		while (index >= 0 && index < nCols) {
-			if (data[vprow][index] == NODATA_value) {
+			height = data[vprow][index];
+			if (height == NODATA_value) {
 				viewshedGrid.setData(vprow, index, 0.0);
 				index += i;
 				continue;
 			}
-			float tempAngle = (data[vprow][index] - vpheight) / (float)abs(vpcol - index);
+			float tempAngle = (height - vpheight) / (float)abs(vpcol - index);
 			if (tempAngle > maxAngle) {
 				maxAngle = tempAngle;
 				viewshedGrid.setData(vprow, index, 1.0);
@@ -203,12 +198,7 @@ void Grid::compute_viewshed(Grid &viewshedGrid, int vprow, int vpcol) {
 		}
 	}
 
-	end = clock(); 
-
-	cout << "Time to fill vertical line: " << (float)(end - start)/CLOCKS_PER_SEC << endl;
-
-	start = clock();
-
+	// all other points 
 	for (int i = 0; i < nRows; i++) {
 		for (int j = 0; j < nCols; j++) {
 			if (data[i][j] == NODATA_value) {
@@ -220,10 +210,6 @@ void Grid::compute_viewshed(Grid &viewshedGrid, int vprow, int vpcol) {
 			}
 		}
 	}
-
-	end = clock(); 
-
-	cout << "Time to fill the rest of the grid: " << (float)(end - start)/CLOCKS_PER_SEC << endl;
 
 }
 
@@ -286,77 +272,26 @@ float Grid::isVisible(int vprow, int vpcol, int row, int col) {
 	// 	return 0.0;
 	// }
 
-	float vpheight = data[vprow][vpcol],
-		  angle = (data[row][col] - vpheight) / sqrt(pow(vprow - row, 2) + pow(vpcol - col, 2));
+	float vpheight = data[vprow][vpcol];
 
-	/* EDGE CASE 1: points on the verticle/horizontal lines of coordinates */
-
-	//points on same horizontal line
-	// if (row == vprow) {
-
-		// //left horizontal point
-		// if (col < vpcol) {
-		// 	int temp = col + 1;
-		// 	while (temp < vpcol) {
-		// 		if ((data[row][temp] - vpheight) > angle * (vpcol - temp)) return 0.0;
-		// 		temp++;
-		// 	}
-		// 	return 1.0;
-		// }
-
-		// //right horizontal point
-		// else {
-		// 	int temp = vpcol + 1;
-		// 	while (temp < col) {
-		// 		if ((data[row][temp] - vpheight) > angle * (temp - vpcol)) return 0.0;
-		// 		temp++;
-		// 	}
-		// 	return 1.0;
-		// }
-	// }
-
-	// //points on same vertical line
-	// else if (col == vpcol) {
-
-	// 	//point at lower row 
-	// 	if (row < vprow) {
-	// 		int temp = row + 1;
-	// 		while (temp < vprow) {
-	// 			if ((data[temp][col] - vpheight) > angle * (vprow - temp)) return 0.0;
-	// 			temp++;
-	// 		}
-	// 		return 1.0;
-	// 	}
-
-	// 	//point at higher row
-	// 	else {
-	// 		int temp = vprow + 1;
-	// 		while (temp < row) {
-	// 			if ((data[temp][col] - vpheight) > angle * (temp - vprow)) return 0.0;
-	// 			temp++;
-	// 		}
-	// 		return 1.0;
-	// 	}
-	// }
-
-	/* END EDGE CASE 1 */
-
-	/* EDGE CASE 2: points on the two vertical/horizontal lines next to view point */
-	// else if (abs(col - vpcol) == 1) {
+	/* EDGE CASE: points on the two vertical/horizontal lines next to view point */
 	if (abs(col - vpcol) == 1) {
-		return horizontalVisible(vprow, vpcol, row, col, vpheight, angle);
+		return horizontalVisible(vprow, vpcol, row, col, vpheight);
 	}
 	else if (abs(row - vprow) == 1) {
-		return verticalVisible(vprow, vpcol, row, col, vpheight, angle);
+		return verticalVisible(vprow, vpcol, row, col, vpheight);
 	}
 
-	/* END EDGE CASE 2 */
+	/* END EDGE CASE */
 
 	//regular case, finding all intersecting points, both horizontally and vertically, then 
 	//compare the vertical angle of each point with the LOS's vertical angle
 
-	float verticalResult = verticalVisible(vprow, vpcol, row, col, vpheight, angle);
-	if (verticalResult == 1.0) return horizontalVisible(vprow, vpcol, row, col, vpheight, angle);
+	float verticalResult = verticalVisible(vprow, vpcol, row, col, vpheight);
+
+	if (verticalResult == 1.0) {
+		return horizontalVisible(vprow, vpcol, row, col, vpheight);
+	}
 	else return 0.0;
 }
 
@@ -429,20 +364,18 @@ float Grid::rowInterpolate(int row, float y) {
 }
 
 //check if any point intersecting horizontal lines blocks the line of sight
-float Grid::horizontalVisible(int vprow, int vpcol, int row, int col, float vpheight, float angle) {
-	int index = 1,
-		dc = col - vpcol,
+float Grid::horizontalVisible(int vprow, int vpcol, int row, int col, float vpheight) {
+
+	int dc = col - vpcol,
 		dr = row - vprow,
 		absDr = abs(dr),
-		coeff = (row > vprow ? 1 : -1); //adjust the coefficient to reflect lower/higher row
+		index = absDr - 1,
+		coeff = (row > vprow ? 1 : -1); 	//adjust the coefficient to reflect lower/higher row
 	float intersectDistance = coeff * (float)dc / dr;  
 
-	while (index < absDr) {
+	while (index) {
 		float dy = intersectDistance * index,
 			  heightIntersect;
-
-		// float dy = coeff * (float)dc * index / dr,
-		// 	heightIntersect;
 
 		//if point is on 45-diagonal	  
 		if (absDr == abs(dc)) {
@@ -452,36 +385,31 @@ float Grid::horizontalVisible(int vprow, int vpcol, int row, int col, float vphe
 			heightIntersect = rowInterpolate(vprow + coeff * index, vpcol + dy);
 		}
 		if (heightIntersect == NODATA_value) {
-			index++;
+			index--;
 			continue;
 		}
-		// if (heightIntersect > vpheight && heightIntersect > data[row][col]) {
-		// 	return 0.0;
-		// }
-		if ((heightIntersect - vpheight) > angle * sqrt(pow(index, 2) + pow(dy, 2))) {
+
+		if ((heightIntersect - vpheight) * absDr > (data[row][col] - vpheight) * index) {
 			return 0.0;
 		}
-		index++;
+		index--;
 	}
 	return 1.0;
 }
 
 //check if any point intersecting vertical lines blocks the line of sight
-float Grid::verticalVisible(int vprow, int vpcol, int row, int col, float vpheight, float angle) {
-	int index = 1,
-		dc = col - vpcol,
+float Grid::verticalVisible(int vprow, int vpcol, int row, int col, float vpheight) {
+	int dc = col - vpcol,
 		dr = row - vprow,
 		absDc = abs(dc),
+		index = 1,
 		coeff = (col > vpcol ? 1 : -1); 	//adjust the coefficient to reflect left/right column
 
-	float intersectDistance = coeff * (float)dr / dc;  
+	float intersectDistance = coeff * (float)dr / dc;
 
 	while (index < absDc) {
 		float dx = intersectDistance * index,
 			  heightIntersect;
-
-		// float dx = coeff * (float)dr * index / dc,
-		// 	heightIntersect;
 
 		//if point is on 45-diagonal
 		if (absDc == abs(dr)) {
@@ -495,10 +423,8 @@ float Grid::verticalVisible(int vprow, int vpcol, int row, int col, float vpheig
 			index++;
 			continue;
 		}
-		// if (heightIntersect > vpheight && heightIntersect > data[row][col]) {
-		// 	return 0.0;
-		// }
-		if ((heightIntersect - vpheight) > angle * sqrt(pow(index, 2) + pow(dx, 2))) {
+
+		if ((heightIntersect - vpheight) * absDc > (data[row][col] - vpheight) * index) {
 			return 0.0;
 		}
 		index++;

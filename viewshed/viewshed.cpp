@@ -120,7 +120,10 @@ void testFunction() {
 	Grid grid;
 
 	for (unsigned int i = 0; i < sizeof(tests)/sizeof(string); i++) {
-		grid.readGridFromFile(path + tests[i] + ".asc");
+		if (!grid.readGridFromFile(path + tests[i] + ".asc")) {
+			cout << "Unable to read " << path + tests[i] + ".asc" << endl;
+			continue;
+		}
 		Grid viewshedGrid(grid.getNRows(), grid.getNCols(), grid.getNODATA_value());
 		cout << "middle point: (" << grid.getNRows()/2 << "," << grid.getNCols()/2 << ")" << endl;
 		float start, end;
@@ -128,7 +131,7 @@ void testFunction() {
 		grid.compute_viewshed(viewshedGrid, grid.getNRows()/2, grid.getNCols()/2);
 		end = clock(); 
 		cout << "time to compute viewshed " << tests[i] << ": " << (float)(end - start) / CLOCKS_PER_SEC << endl;
-		// cout << "write to " << viewshedGrid.writeToFile(path + tests[i] + "vis.asc") << endl;
+		cout << "write to " << viewshedGrid.writeToFile(path + tests[i] + "vis.asc") << endl;
 		grid.freeGridData();
 	}
 
