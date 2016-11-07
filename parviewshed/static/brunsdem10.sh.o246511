@@ -1,0 +1,4 @@
+open file ../testGrids/brunsdem.asc
+reading brunsdem.asc: 0.125 seconds
+computing viewshed with 10 threads: 0.00000000 seconds
+ ========================================

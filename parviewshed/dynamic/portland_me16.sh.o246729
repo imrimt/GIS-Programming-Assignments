@@ -1,0 +1,4 @@
+open file ../testGrids/portland_me.asc
+reading portland_me.asc: 40 seconds
+computing viewshed with 16 threads: 10.31250000 seconds
+ ========================================

@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
 
 	cout << "time to compute viewshed: " << (float)(end - start) / CLOCKS_PER_SEC << endl;
 
-	cout << "write to " << viewshedGrid.writeToFile(inputPath + output) << endl;
+	// cout << "write to " << viewshedGrid.writeToFile(inputPath + output) << endl;
 
 	//cleanup memory
 	grid.freeGridData();
@@ -113,7 +113,7 @@ bool isInteger(string str) {
 
 //function is written for testing purpose
 void testFunction() {
-	string path = "/Users/sngo/Desktop/GIS-TestGrids/";
+	string path = "../testGrids/";
 	string tests[] = {"brunsdem", "kaweah", "sierra", "portland_me", "usadem2", "eelriver", "washington"};
 	// string tests[] = {"brunsdem", "kaweah"};
 

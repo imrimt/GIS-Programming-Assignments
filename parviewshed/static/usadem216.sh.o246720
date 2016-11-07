@@ -1,0 +1,4 @@
+open file ../testGrids/usadem2.asc
+reading usadem2.asc: 52.5625 seconds
+computing viewshed with 16 threads: 4.93750000 seconds
+ ========================================

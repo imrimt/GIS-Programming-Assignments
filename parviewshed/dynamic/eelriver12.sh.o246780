@@ -1,0 +1,4 @@
+open file /mnt/research/gis/DATA/DEM/eelriver.asc
+reading eelriver.asc: 120.625 seconds
+computing viewshed with 12 threads: 434.93750000 seconds
+ ========================================

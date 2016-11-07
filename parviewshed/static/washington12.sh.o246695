@@ -1,0 +1,4 @@
+open file /mnt/research/gis/DATA/DEM/washington.asc
+reading washington.asc: 186.438 seconds
+computing viewshed with 12 threads: 314.43750000 seconds
+ ========================================

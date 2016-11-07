@@ -1,0 +1,4 @@
+open file ../testGrids/sierra.asc
+reading sierra.asc: 2.125 seconds
+computing viewshed with 16 threads: 0.62500000 seconds
+ ========================================

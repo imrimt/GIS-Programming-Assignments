@@ -1,0 +1,52 @@
+open file ../testGrids/portland_me.asc
+reading portland_me.asc: 35.0625 seconds
+time for interior points: 137.5 seconds
+computing viewshed with blocksize 1 and 1 threads: 137.5 seconds
+time for interior points: 72.8125 seconds
+computing viewshed with blocksize 1 and 2 threads: 72.8125 seconds
+time for interior points: 38.625 seconds
+computing viewshed with blocksize 1 and 4 threads: 38.625 seconds
+time for interior points: 19.5625 seconds
+computing viewshed with blocksize 1 and 8 threads: 19.5625 seconds
+time for interior points: 123.5 seconds
+computing viewshed with blocksize 16 and 1 threads: 123.5 seconds
+time for interior points: 65.3125 seconds
+computing viewshed with blocksize 16 and 2 threads: 65.3125 seconds
+time for interior points: 34.5625 seconds
+computing viewshed with blocksize 16 and 4 threads: 34.5625 seconds
+time for interior points: 17.8125 seconds
+computing viewshed with blocksize 16 and 8 threads: 17.8125 seconds
+time for interior points: 123.375 seconds
+computing viewshed with blocksize 32 and 1 threads: 123.375 seconds
+time for interior points: 65.25 seconds
+computing viewshed with blocksize 32 and 2 threads: 65.25 seconds
+time for interior points: 34.5 seconds
+computing viewshed with blocksize 32 and 4 threads: 34.5 seconds
+time for interior points: 17.875 seconds
+computing viewshed with blocksize 32 and 8 threads: 17.875 seconds
+time for interior points: 123.312 seconds
+computing viewshed with blocksize 64 and 1 threads: 123.312 seconds
+time for interior points: 65.1875 seconds
+computing viewshed with blocksize 64 and 2 threads: 65.1875 seconds
+time for interior points: 34.5 seconds
+computing viewshed with blocksize 64 and 4 threads: 34.5 seconds
+time for interior points: 17.875 seconds
+computing viewshed with blocksize 64 and 8 threads: 17.875 seconds
+time for interior points: 123.375 seconds
+computing viewshed with blocksize 1024 and 1 threads: 123.375 seconds
+time for interior points: 65.3125 seconds
+computing viewshed with blocksize 1024 and 2 threads: 65.3125 seconds
+time for interior points: 34.5625 seconds
+computing viewshed with blocksize 1024 and 4 threads: 34.5625 seconds
+time for interior points: 17.8125 seconds
+computing viewshed with blocksize 1024 and 8 threads: 17.8125 seconds
+time for interior points: 123.75 seconds
+computing viewshed with blocksize 16384 and 1 threads: 123.75 seconds
+time for interior points: 65.25 seconds
+computing viewshed with blocksize 16384 and 2 threads: 65.25 seconds
+time for interior points: 34.5 seconds
+computing viewshed with blocksize 16384 and 4 threads: 34.5 seconds
+time for interior points: 17.8125 seconds
+computing viewshed with blocksize 16384 and 8 threads: 17.8125 seconds
+write to portland_mevis.asc in 39.25 seconds
+========================================

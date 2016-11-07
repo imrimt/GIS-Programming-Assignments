@@ -1,0 +1,4 @@
+open file ../testGrids/kaweah.asc
+reading kaweah.asc: 0.4375 seconds
+computing viewshed with 10 threads: 0.00000000 seconds
+ ========================================

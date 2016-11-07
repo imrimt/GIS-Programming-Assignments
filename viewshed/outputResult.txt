@@ -1,0 +1,19 @@
+middle point: (266,193)
+time to compute viewshed brunsdem: 0.09
+write to ../testGrids/brunsdemvis.asc
+middle point: (712,581)
+time to compute viewshed kaweah: 0.22
+write to ../testGrids/kaweahvis.asc
+middle point: (1875,1336)
+time to compute viewshed sierra: 7.37
+write to ../testGrids/sierravis.asc
+middle point: (5346,5994)
+time to compute viewshed portland_me: 138.22
+write to ../testGrids/portland_mevis.asc
+middle point: (12750,5500)
+time to compute viewshed usadem2: 65.87
+write to ../testGrids/usadem2vis.asc
+Unable to open ../testGrids/eelriver.asc
+Unable to read ../testGrids/eelriver.asc
+Unable to open ../testGrids/washington.asc
+Unable to read ../testGrids/washington.asc
