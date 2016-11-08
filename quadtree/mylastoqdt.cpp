@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
 	string numPoints = argv[2];
 	string inputPath;
 	string fileName;
-	// int numPointsInLeaf = stoi(numPoints);
+	max_points_per_leaf = stoi(numPoints);
 
 	if (input.find_last_of("/") != string::npos) {
 		int pos = input.find_last_of("/");
@@ -46,21 +46,22 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 
-	vector<string> test = mylas.getHeader();
-
-	for (int i = 0; i < test.size(); i++) {
-		cout << test[i] << endl;
-	}
+	mylas.buildQuadtree();
 
 	return 0;
 }
 
 MyLAS::MyLAS() {
-
+	// points = new (nothrow) point3D;
+	tree = quadtree_init();
 }
 
 MyLAS::~MyLAS() {
 
+}
+
+void MyLAS::buildQuadtree() {
+	tree = quadtree_build(points, numData, max_points_per_leaf);
 }
 
 bool MyLAS::readLiDARData(string file) {
@@ -78,7 +79,7 @@ bool MyLAS::readLiDARData(string file) {
 	header.clear();
 
 	// saving extra information, no need to parse
-	for (int i = 0; i < 7; i++) {
+	for (int i = 0; i < 8; i++) {
 		getline(myFile, line);
 		header.push_back(line);
 	}
@@ -88,10 +89,14 @@ bool MyLAS::readLiDARData(string file) {
 	header.push_back(line);
 	headerSize = stoi(numberTokenize(line));
 
+	// cout << "headerSize = " << headerSize << endl;
+
 	// obtain offset to point data
 	getline(myFile, line);
 	header.push_back(line);
 	offSetToPointData = stoi(numberTokenize(line));
+
+	// cout << "offSetToPointData = " << offSetToPointData << endl;
 
 	// saving extra information, no need to parse
 	for (int i = 0; i < 3; i++) {
@@ -102,7 +107,9 @@ bool MyLAS::readLiDARData(string file) {
 	// obtain number of points records
 	getline(myFile,line);
 	header.push_back(line);
-	numPointsInLeaf = stoi(numberTokenize(line));
+	numData = stoi(numberTokenize(line));
+
+	// cout << "numData = " << numData << endl;
 
 	// saving the rest of the header, no need to parse
 	for (int i = 0; i < 5; i++) {
@@ -110,27 +117,46 @@ bool MyLAS::readLiDARData(string file) {
 		header.push_back(line);
 	}
 
-	//start allocating memory to the grid data 2D-array
-	// data = new (nothrow) float*[nRows];
-	// if (data == NULL) {
-	// 	return false;
-	// }
-	// for (int i = 0; i < nRows; i++) {
-	// 	data[i] = new (nothrow) float[nCols];
-	// 	if (data[i] == NULL) {
-	// 		return false;
-	// 	}
-	// }
+	// parse data into array of point3D
+	while (getline(myFile, line)) {
+		point3D point;
+		stringstream ss(line);
 
-	// //start filling the grid with data
-	// int r = 0;
-	// while (getline(myFile,line)) {
-	// 	stringstream ss(line);
-	// 	for (int c = 0; c < nCols; c++) {
-	// 		ss >> data[r][c];
-	// 	}
-	// 	r++;
-	// }
+		string value = "";
+
+		int count = 3;
+
+		for (int i = 0; i < line.length(); i++) {
+			if (line[i] == ',') {
+				switch (count) {
+					case 3: {
+						point.x = atof(value.c_str());
+						break;
+					}
+					case 2: {
+						point.y = atof(value.c_str());
+						break;
+					}
+					case 1: {
+						point.z = atof(value.c_str());
+						break;
+					}
+				}
+				value = "";
+				count--;
+			}
+			else {
+				value += line[i];
+			}
+			if (!count) {
+				break;
+			}
+		}
+
+		points.push_back(point);
+	}
+
+	// cout << "size of points = " << points.size() << endl;
 
 	return true;
 

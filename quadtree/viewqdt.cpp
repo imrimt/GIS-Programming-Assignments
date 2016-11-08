@@ -42,6 +42,11 @@ GLfloat cyan[3] = {0.0, 1.0, 1.0};
 /* forward declarations of functions */
 void display(void);
 void keypress(unsigned char key, int x, int y);
+void draw_points(); 
+void print_points(point3D* p, int k); 
+void draw_point(point3D point); 
+void display(); 
+
 void reset(); 
 
 
@@ -97,6 +102,11 @@ int main(int argc, char** argv) {
     //and n are global so they dont need to be parameters
     //readLidarFromFile(argv[1]);
 
+    
+    //print bounding box 
+    printf("minX=%.1f, maxX = %.1f, minY=%.1f maxY=%.1f\n", minX, maxX, minY, maxY);
+
+
     //build quadtree 
     //tree = quadtree_build(points, n, max_points_per_leaf); 
 
@@ -139,14 +149,50 @@ int main(int argc, char** argv) {
 
 
 
+
+/* ****************************** */
+void display(void) {
+    
+    glClear(GL_COLOR_BUFFER_BIT);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity(); //clear the matrix
+    
+
+    /* The default GL window is [-1,1]x[-1,1] with the origin in the
+       center. 
+    
+       Our points are in the range [minX,maxX]x[minY,maxY] 
+    */ 
+    
+
+    //for now we just draw the input points 
+    draw_points();
+
+    //draw_quadtree();
+    //eventually we should call teh function that draws the quadtree 
+
+ 
+    /* execute the drawing commands */
+    glFlush();
+}
+
+
 /* ****************************** */
 /* draw a single point */
 void draw_point(point3D point)
 {
     glColor3fv(yellow);
 
+    /* our point is in the range minX..maxX, minY..maxY, and the GL
+       window is [-1,1]x[-1,1]. We need to transform each point
+       appropriately so that [minX,maxX]x[minY,maxY] maps onto
+       [-1,1]x[-1,1] 
+    */
+    float x=0, y=0;  //just to initialize with something
+    
+    
     glBegin(GL_POINTS);
-    glVertex2f(point.x, point.y);
+    glVertex2f(x, y);
     glEnd();
 }
 
@@ -156,7 +202,10 @@ void draw_point(point3D point)
 void draw_line(point3D p1, point3D p2)
 {
     glColor3fv(cyan);
-    
+
+    //need to scale the points so that they are in [-1,1]x[-1,1] 
+
+
     glBegin(GL_LINES);
     glVertex2f(p1.x, p1.y);
     glVertex2f(p2.x, p2.y);
@@ -172,19 +221,18 @@ void draw_line(point3D p1, point3D p2)
  */
 void draw_points(){
 
-  const int R= 1;
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
   //set color 
   glColor3fv(yellow);   
   
-  assert(points);
+  if (points == NULL) return; 
+  
   int i;
   for (i=0; i<n; i++) {
     draw_point(points[i]); 
   }
-
 }
 
 
@@ -205,34 +253,6 @@ void draw_quadtree()
     draw_node(tree->root);
 }
 
-
-
-
-/* ****************************** */
-void display(void) {
-    
-    glClear(GL_COLOR_BUFFER_BIT);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity(); //clear the matrix
-    
-    
-    /* the default GL window is [-1,1]x[-1,1] with the origin in the
-     center the points are in the range (minX,maxX) to (minY,maxY), so
-     they need to be mapped to [-1,1] x [-1,1]. This means first
-     translate them then scale */
-
-    glScalef(2.0/(maxX-minX), 2.0/(maxY-minY), 1.0);
-    glTranslatef(-(maxX-minX)/2, -(maxY-minY)/2, 0);
-
-    //eventually we'll want to call the function that draws the tree
-    //draw_quadtree();
-   
-    //for now we just draw the input points 
-    draw_points();
- 
-    /* execute the drawing commands */
-    glFlush();
-}
 
 
 

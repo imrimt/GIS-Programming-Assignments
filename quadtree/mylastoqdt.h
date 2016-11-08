@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <vector>
+#include "quadtree.h"
 
 using namespace std;
 
@@ -31,6 +32,7 @@ class MyLAS {
 		MyLAS();
 		~MyLAS();
 
+		void buildQuadtree();
 		bool readLiDARData(string file);
 		vector<string> getHeader() { return header; }
 
@@ -39,7 +41,11 @@ class MyLAS {
 
 		// private variables
 		vector<string> header;
-		int headerSize, offSetToPointData, numPointsInLeaf;
+		int headerSize, offSetToPointData, numData;
+
+		vector<point3D> points;
+
+		quadtree *tree;
 };
 
 #endif	//MYLASTOQDT_H

@@ -25,13 +25,33 @@ LIBPATH = -L/usr/lib64 -L/usr/X11R6/lib
 LDFLAGS+=  -lGL -lglut -lrt -lGLU -lX11 -lm  -lXmu -lXext -lXi
 endif
 
+CC = /usr/bin/g++ $(CFLAGS) $(INCLUDEPATH)
 
-CC = gcc $(CFLAGS) $(INCLUDEPATH)
+CCFLAGS = /usr/bin/g++
 
+C11 = -std=c++11
 
 PROGS = viewqdt
 
+mylastoqdt: clean
+	$(CCFLAGS) $(CFLAGS) $(C11) -o mylastoqdt mylastoqdt.cpp quadtree.cpp
+
 default: $(PROGS)
+
+france:
+	./mylastoqdt data/france.txt 10
+
+lake:
+	./mylastoqdt data/lake.txt 10
+
+fusa:
+	./mylastoqdt data/fusa.txt 10
+
+sample:
+	./mylastoqdt data/sample.txt 10
+
+zurich:
+	./mylastoqdt data/zurich.txt 10
 
 viewqdt: viewqdt.o  quadtree.o
 	$(CC) -o $@ viewqdt.o   quadtree.o $(LDFLAGS)
@@ -42,8 +62,9 @@ viewqdt.o: viewqdt.c quadtree.h
 quadtree.o: quadtree.c quadtree.h
 	$(CC) -c $(INCLUDEPATH)  quadtree.c -o $@
 
-clean::	
-	rm *.o
-	rm viewqdt
+clean:
+	rm -f *.o
+	rm -f viewqdt
+	rm -f mylastoqdt
 
 
