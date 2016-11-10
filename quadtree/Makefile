@@ -35,40 +35,42 @@ PROGS = viewqdt
 
 FILEPATH = /Users/sngo/Desktop/GIS-Data/lasdata
 
+POINTS = 10000
+
 mylastoqdt: clean
 	$(CC) $(LDFLAGS) -o mylastoqdt viewqdt.cpp mylastoqdt.cpp quadtree.cpp
 
 default: $(PROGS)
 
 france:
-	./mylastoqdt $(FILEPATH)/france.txt 30
+	./mylastoqdt $(FILEPATH)/france.txt $(POINTS)
 
 lake:
-	./mylastoqdt $(FILEPATH)/lake.txt 30
+	./mylastoqdt $(FILEPATH)/lake.txt $(POINTS)
 
 fusa:
-	./mylastoqdt $(FILEPATH)/fusa.txt 30
+	./mylastoqdt $(FILEPATH)/fusa.txt $(POINTS)
 
 sample:
-	./mylastoqdt $(FILEPATH)/sample.txt 30
+	./mylastoqdt $(FILEPATH)/sample.txt $(POINTS)
 
 zurich:
-	./mylastoqdt $(FILEPATH)/zurich.txt 30
+	./mylastoqdt $(FILEPATH)/zurich.txt $(POINTS)
 
 house:
-	./mylastoqdt $(FILEPATH)/house.txt 30
+	./mylastoqdt $(FILEPATH)/house.txt $(POINTS)
 
 autzen:
-	./mylastoqdt $(FILEPATH)/autzen.txt 30
+	./mylastoqdt $(FILEPATH)/autzen.txt $(POINTS)
 
 lincoln:
-	./mylastoqdt $(FILEPATH)/lincoln.txt 30
+	./mylastoqdt $(FILEPATH)/lincoln.txt $(POINTS)
 
 radiohead_data2:
-	./mylastoqdt $(FILEPATH)/radiohead_data2.txt 30
+	./mylastoqdt $(FILEPATH)/radiohead_data2.txt $(POINTS)
 
 serpent:
-	./mylastoqdt $(FILEPATH)/serpent.txt 30
+	./mylastoqdt $(FILEPATH)/serpent.txt $(POINTS)
 
 # viewqdt: viewqdt.o mylastoqdt.o quadtree.o
 # 	$(CC) -o $@ viewqdt.o quadtree.o $(LDFLAGS) 

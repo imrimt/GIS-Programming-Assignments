@@ -54,7 +54,7 @@ pair<float, float> transform(float x, float y);
 
 /* global variables */
 const int WINDOWSIZE = 500;
-const int POINT_SIZE  = 6.0f;
+const int POINT_SIZE  = 1.0f;
 const float openGLRange = 2;
 
 //the point cloud
