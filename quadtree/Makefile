@@ -25,7 +25,7 @@ LIBPATH = -L/usr/lib64 -L/usr/X11R6/lib
 LDFLAGS+=  -lGL -lglut -lrt -lGLU -lX11 -lm  -lXmu -lXext -lXi
 endif
 
-CC = /usr/bin/g++ $(CFLAGS) $(INCLUDEPATH)
+CC = /usr/bin/g++ $(CFLAGS) $(C11) $(INCLUDEPATH)
 
 CCFLAGS = /usr/bin/g++
 
@@ -33,34 +33,54 @@ C11 = -std=c++11
 
 PROGS = viewqdt
 
+FILEPATH = /Users/sngo/Desktop/GIS-Data/lasdata
+
 mylastoqdt: clean
-	$(CCFLAGS) $(CFLAGS) $(C11) -o mylastoqdt mylastoqdt.cpp quadtree.cpp
+	$(CC) $(LDFLAGS) -o mylastoqdt viewqdt.cpp mylastoqdt.cpp quadtree.cpp
 
 default: $(PROGS)
 
 france:
-	./mylastoqdt data/france.txt 10
+	./mylastoqdt $(FILEPATH)/france.txt 30
 
 lake:
-	./mylastoqdt data/lake.txt 10
+	./mylastoqdt $(FILEPATH)/lake.txt 30
 
 fusa:
-	./mylastoqdt data/fusa.txt 10
+	./mylastoqdt $(FILEPATH)/fusa.txt 30
 
 sample:
-	./mylastoqdt data/sample.txt 10
+	./mylastoqdt $(FILEPATH)/sample.txt 30
 
 zurich:
-	./mylastoqdt data/zurich.txt 10
+	./mylastoqdt $(FILEPATH)/zurich.txt 30
 
-viewqdt: viewqdt.o  quadtree.o
-	$(CC) -o $@ viewqdt.o   quadtree.o $(LDFLAGS)
+house:
+	./mylastoqdt $(FILEPATH)/house.txt 30
 
-viewqdt.o: viewqdt.c quadtree.h 
-	$(CC) -c $(INCLUDEPATH)  viewqdt.c  -o $@
+autzen:
+	./mylastoqdt $(FILEPATH)/autzen.txt 30
 
-quadtree.o: quadtree.c quadtree.h
-	$(CC) -c $(INCLUDEPATH)  quadtree.c -o $@
+lincoln:
+	./mylastoqdt $(FILEPATH)/lincoln.txt 30
+
+radiohead_data2:
+	./mylastoqdt $(FILEPATH)/radiohead_data2.txt 30
+
+serpent:
+	./mylastoqdt $(FILEPATH)/serpent.txt 30
+
+# viewqdt: viewqdt.o mylastoqdt.o quadtree.o
+# 	$(CC) -o $@ viewqdt.o quadtree.o $(LDFLAGS) 
+
+# viewqdt.o: viewqdt.cpp quadtree.h
+# 	$(CC) -c $(INCLUDEPATH) viewqdt.cpp -o $@
+
+# mylastoqdt.o: mylastoqdt.cpp quadtree.h
+# 	$(CC) -c $(INCLUDEPATH) mylastoqdt.cpp -o $@
+
+# quadtree.o: quadtree.cpp quadtree.h
+# 	$(CC) -c $(INCLUDEPATH) quadtree.cpp -o $@
 
 clean:
 	rm -f *.o

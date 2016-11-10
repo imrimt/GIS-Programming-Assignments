@@ -3,67 +3,33 @@
  Author: Son D. Ngo
  Date:   November 2016
  
- Description: Cpp file for main
+ Description: Cpp file for MyLAS class
   
  ******************************************************************************/
 
 #include "mylastoqdt.h"
 
-bool isInteger(string str);
-
-int main(int argc, char* argv[]) {
-
-	if (argc != 3) {
-		cout << "Invalid number of arguments. Please enter in the following format: " << endl
-			 << "[path to executable] [LiDAR data] [number of points per leaf]" << endl;
-		exit(1);
-	}
-
-	if (!isInteger(argv[2])) {
-		cout << "Invalid argument for coordinates. Please make sure it's a valid integer" << endl;
-		exit(1);
-	}
-
-	string input = argv[1];
-	string numPoints = argv[2];
-	string inputPath;
-	string fileName;
-	max_points_per_leaf = stoi(numPoints);
-
-	if (input.find_last_of("/") != string::npos) {
-		int pos = input.find_last_of("/");
-		inputPath = input.substr(0, pos + 1);
-		fileName = input.substr(input.find_last_of("/") + 1);
-	} 
-	else {
-		fileName = input;
-	}
-
-	MyLAS mylas;
-
-	if (!mylas.readLiDARData(input)) {
-		cout << "Unable to read " << input << endl;
-		exit(1);
-	}
-
-	mylas.buildQuadtree();
-
-	return 0;
-}
-
+// Constructor
 MyLAS::MyLAS() {
-	// points = new (nothrow) point3D;
 	tree = quadtree_init();
 }
 
+// Destructor
 MyLAS::~MyLAS() {
-
+	quadtree_free(tree);
 }
 
-void MyLAS::buildQuadtree() {
+
+// build quadtree given the number of points in leaf
+void MyLAS::buildQuadtree(int maxPoints) {
+	max_points_per_leaf = maxPoints;
+	printf("max_points_per_leaf = %d\n", max_points_per_leaf);
 	tree = quadtree_build(points, numData, max_points_per_leaf);
+
+	printf("Size of tree: %d\n", tree->root->k);
 }
 
+// read in LiDAR data and store them into a vector of points
 bool MyLAS::readLiDARData(string file) {
 
 	string line;
@@ -89,14 +55,10 @@ bool MyLAS::readLiDARData(string file) {
 	header.push_back(line);
 	headerSize = stoi(numberTokenize(line));
 
-	// cout << "headerSize = " << headerSize << endl;
-
 	// obtain offset to point data
 	getline(myFile, line);
 	header.push_back(line);
 	offSetToPointData = stoi(numberTokenize(line));
-
-	// cout << "offSetToPointData = " << offSetToPointData << endl;
 
 	// saving extra information, no need to parse
 	for (int i = 0; i < 3; i++) {
@@ -108,8 +70,6 @@ bool MyLAS::readLiDARData(string file) {
 	getline(myFile,line);
 	header.push_back(line);
 	numData = stoi(numberTokenize(line));
-
-	// cout << "numData = " << numData << endl;
 
 	// saving the rest of the header, no need to parse
 	for (int i = 0; i < 5; i++) {
@@ -148,15 +108,11 @@ bool MyLAS::readLiDARData(string file) {
 			else {
 				value += line[i];
 			}
-			if (!count) {
-				break;
-			}
 		}
+		point.c = stoi(value);
 
 		points.push_back(point);
 	}
-
-	// cout << "size of points = " << points.size() << endl;
 
 	return true;
 
@@ -165,21 +121,4 @@ bool MyLAS::readLiDARData(string file) {
 //scan for number in a given string
 string MyLAS::numberTokenize(const string &input) {
 	return input.substr(input.find_first_of("-0123456789"));
-}
-
-//return true if a given string represents an integer, otherwise
-//return false
-bool isInteger(string str) {
-	char start = str[0];
-	if (isdigit(start) == false && start != '-') {
-		return false;
-	} 
-	if (start == '0' && str.length() > 1) {
-		return false;
-	}
-	for (unsigned int i = 1; i < str.length(); i++) {
-		if (isdigit(str[i]) == false) return false;
-	}
-
-	return true;
 }

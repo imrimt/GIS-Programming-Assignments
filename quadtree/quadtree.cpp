@@ -1,6 +1,11 @@
-/* 
-
-*/
+/*****************************************************************************
+ File:   quadtree.cpp
+ Author: Son D. Ngo
+ Date:   November 2016
+ 
+ Description: Cpp file that implements functions to operate on quad tree
+  
+ ******************************************************************************/
 
 #include "quadtree.h"
 
@@ -19,45 +24,45 @@ quadtree* quadtree_init() {
 
 
 //private function to recursively free the subtree rooted at node
-static void treeNode_free(treeNode* node) {
-    //fill in 
-    if (node->nw) delete node->nw;
-    if (node->ne) delete node->ne;
-    if (node->sw) delete node->sw;
-    if (node->se) delete node->se;
+void treeNode_free(treeNode* node) {
+    if (node->nw) treeNode_free(node->nw);
+    if (node->ne) treeNode_free(node->ne);
+    if (node->sw) treeNode_free(node->sw);
+    if (node->se) treeNode_free(node->se);
+
+    delete node;
 }
 
 
 /* free all memory allocated for the tree, including the tree
 itself */
 void quadtree_free(quadtree *tree) {
-
-if (!tree) return; 
+    if (!tree) return; 
     treeNode_free(tree->root); 
     free(tree); 
 }
 
 
 /* create a tree representing the  array of points */
-quadtree* quadtree_build(const vector<point3D>& points, int n, int max_points_per_leaf) {
+quadtree* quadtree_build(const vector<point3D>& points, int n, int max_points) {
 
     quadtree* tree = quadtree_init();
 
-    // max_points_per_leaf = max_points_per_leaf;
+    max_points_per_leaf = max_points;
+    height = numNodes = 0;
 
     square firstSqr;
 
-    firstSqr = findSurroundingSquare(points);
-
-    printf("Xmin = %.2f\n", firstSqr.Xmin);
-    printf("Xmax = %.2f\n", firstSqr.Xmax);
-    printf("Ymin = %.2f\n", firstSqr.Ymin);
-    printf("Ymax = %.2f\n", firstSqr.Ymax);
+    firstSqr = findBoundingSquare(points);
 
     treeNode* root = buildQuadtree(points, firstSqr);
 
+    // saving information to the tree
     tree->root = root;
     tree->max_points_per_leaf = max_points_per_leaf;
+    tree->height = height;
+    tree->count = numNodes;
+    tree->boundingSquare = firstSqr;
 
     return tree;
 }
@@ -67,6 +72,8 @@ treeNode* buildQuadtree(const vector<point3D>& points, const square &S) {
     treeNode* node = new (nothrow) treeNode();
     assert(node);
 
+    node->k = points.size();
+
     int numPoints = points.size();
 
     // if points have at most max_poitns_per_leaf, then store P in node
@@ -75,6 +82,7 @@ treeNode* buildQuadtree(const vector<point3D>& points, const square &S) {
         if (numPoints == 0) {
             return NULL;
         }
+        numNodes++;
         node->p = points;
         node->k = numPoints;
         node->ne = node->nw = node->se = node->sw = NULL;
@@ -84,17 +92,10 @@ treeNode* buildQuadtree(const vector<point3D>& points, const square &S) {
     // subsets
     else {
 
-        double midX = (S.Xmax + S.Xmin) / 2.00,
-               midY = (S.Ymax + S.Ymin) / 2.00;
+        float midX = (S.Xmax + S.Xmin) / 2.00,
+              midY = (S.Ymax + S.Ymin) / 2.00;
 
-        printf("Xmin = %.2f\n", S.Xmin);
-        printf("Xmax = %.2f\n", S.Xmax);
-        printf("Ymin = %.2f\n", S.Ymin);
-        printf("Ymax = %.2f\n", S.Ymax);
-        printf("Xmid = %.2f\n", midX);
-        printf("Ymid = %.2f\n", midY);
-        printf("============\n");
-
+        // if the square is too small then return NULL
         if ((S.Xmax - S.Xmin) < EPSILON || (S.Ymax - S.Ymin) < EPSILON) {
             return NULL;
         }
@@ -103,26 +104,13 @@ treeNode* buildQuadtree(const vector<point3D>& points, const square &S) {
 
         square NEsquare, NWsquare, SEsquare, SWsquare;
 
-        NEsquare.Xmin = midX;
-        NEsquare.Ymin = S.Ymin;
-        NEsquare.Xmax = S.Xmax;
-        NEsquare.Ymax = midY;
+        // Partition into 4 sub-squares
+        NEsquare.buildSquare(midX, S.Xmax, S.Ymin, midY);
+        NWsquare.buildSquare(S.Xmin, midX, S.Ymin, midY);
+        SEsquare.buildSquare(midX, S.Xmax, midY, S.Ymax);
+        SWsquare.buildSquare(S.Xmin, midX, midY, S.Ymax);
 
-        NWsquare.Xmin = S.Xmin;
-        NWsquare.Ymin = S.Ymin;
-        NWsquare.Xmax = midX;
-        NWsquare.Ymax = midY;
-
-        SEsquare.Xmin = midX;
-        SEsquare.Ymin = midY;
-        SEsquare.Xmax = S.Xmax;
-        SEsquare.Ymax = S.Ymax;
-
-        SWsquare.Xmin = S.Xmin;
-        SWsquare.Ymin = midY;
-        SWsquare.Xmax = midX;
-        SWsquare.Ymax = S.Ymax;
-
+        // place each point into its corresponding square
         for (auto point : points) {
             if (point.x < midX) {
                 if (point.y < midY) {
@@ -142,25 +130,49 @@ treeNode* buildQuadtree(const vector<point3D>& points, const square &S) {
             }
         }
 
-        node->ne = buildQuadtree(NEpoints, NEsquare);
-        node->nw = buildQuadtree(NWpoints, NWsquare);
-        node->se = buildQuadtree(SEpoints, SEsquare);
-        node->sw = buildQuadtree(SWpoints, SWsquare);
+        bool hasChild = false;
 
-        node->k = node->ne->k + node->nw->k + node->se->k + node->sw->k;
+        numNodes++;
+
+        node->ne = buildQuadtree(NEpoints, NEsquare);
+        if (node->ne) {
+        	numNodes++;
+        	hasChild = true;
+        }
+
+        node->nw = buildQuadtree(NWpoints, NWsquare);
+        if (node->nw) {
+        	numNodes++;
+        	hasChild = true;
+        }
+        
+        node->se = buildQuadtree(SEpoints, SEsquare);
+        if (node->se) {
+        	numNodes++;
+        	hasChild = true;
+        }
+
+        node->sw = buildQuadtree(SWpoints, SWsquare);
+        if (node->sw) {
+        	numNodes++;
+        	hasChild = true;
+        }
+
+        // whenever a node has a child, the height increases by 1 (one-time only)
+        if (hasChild) height++;
     }
 
     return node;
 }
 
-square findSurroundingSquare(const vector<point3D>& points) {
+square findBoundingSquare(const vector<point3D>& points) {
 
     square S;
 
-    double Xmin = INT_MAX,
-           Xmax = INT_MIN, 
-           Ymin = INT_MAX,
-           Ymax = INT_MIN;
+    float Xmin = INT_MAX,
+          Xmax = INT_MIN, 
+          Ymin = INT_MAX,
+          Ymax = INT_MIN;
 
     for (int i = 0; i < points.size(); i++) {
         point3D temp = points[i];

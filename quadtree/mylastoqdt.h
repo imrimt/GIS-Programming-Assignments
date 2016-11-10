@@ -6,7 +6,7 @@
  Author: Son D. Ngo
  Date:   November 2016
  
- Description: Header file for main
+ Description: Header file for MyLAS class
   
  ******************************************************************************/
 
@@ -32,9 +32,12 @@ class MyLAS {
 		MyLAS();
 		~MyLAS();
 
-		void buildQuadtree();
+		int getNumData() { return numData; }
+		void buildQuadtree(int maxPoints);
 		bool readLiDARData(string file);
 		vector<string> getHeader() { return header; }
+		quadtree* getQuadtree() { return tree; }
+		vector<point3D>* getPoints() { return &points; } 
 
 	private:
 		string numberTokenize(const string &input);
