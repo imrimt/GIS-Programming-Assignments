@@ -30,15 +30,15 @@ static int numNodes;
 
 // point3D struct
 typedef struct {
-	float x,y,z;
+	double x,y,z;
     int c;
 } point3D;
 
 // square struct
 typedef struct {
-	float Xmin, Xmax, Ymin, Ymax;
+	double Xmin, Xmax, Ymin, Ymax;
 
-    void buildSquare(float Xmin, float Xmax, float Ymin, float Ymax) {
+    void buildSquare(double Xmin, double Xmax, double Ymin, double Ymax) {
         this->Xmin = Xmin;
         this->Xmax = Xmax;
         this->Ymin = Ymin;

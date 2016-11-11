@@ -92,7 +92,7 @@ treeNode* buildQuadtree(const vector<point3D>& points, const square &S) {
     // subsets
     else {
 
-        float midX = (S.Xmax + S.Xmin) / 2.00,
+        double midX = (S.Xmax + S.Xmin) / 2.00,
               midY = (S.Ymax + S.Ymin) / 2.00;
 
         // if the square is too small then return NULL
@@ -169,7 +169,7 @@ square findBoundingSquare(const vector<point3D>& points) {
 
     square S;
 
-    float Xmin = INT_MAX,
+    double Xmin = INT_MAX,
           Xmax = INT_MIN, 
           Ymin = INT_MAX,
           Ymax = INT_MIN;
@@ -182,10 +182,23 @@ square findBoundingSquare(const vector<point3D>& points) {
         Ymax = temp.y > Ymax ? temp.y : Ymax;
     }
 
-    S.Xmin = Xmin;
-    S.Xmax = Xmax;
-    S.Ymin = Ymin;
-    S.Ymax = Ymax;
+    double xDiff = Xmax - Xmin,
+           yDiff = Ymax - Ymin;
+
+    // take the maximum between width and height to get a square that surrounds
+    // all points
+    if (xDiff > yDiff) {
+        S.Xmin = Xmin;
+        S.Xmax = Xmax;
+        S.Ymin = Ymin - (xDiff - yDiff) / 2.00;
+        S.Ymax = Ymax + (xDiff - yDiff) / 2.00;
+    }
+    else {
+        S.Xmin = Xmin - (yDiff - xDiff) / 2.00;
+        S.Xmax = Xmax + (yDiff - xDiff) / 2.00;
+        S.Ymin = Ymin;
+        S.Ymax = Ymax;
+    }
 
     return S;
 }

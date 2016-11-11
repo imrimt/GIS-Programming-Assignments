@@ -35,7 +35,7 @@ PROGS = viewqdt
 
 FILEPATH = /Users/sngo/Desktop/GIS-Data/lasdata
 
-POINTS = 10000
+POINTS = 1000
 
 mylastoqdt: clean
 	$(CC) $(LDFLAGS) -o mylastoqdt viewqdt.cpp mylastoqdt.cpp quadtree.cpp

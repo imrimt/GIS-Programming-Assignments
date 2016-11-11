@@ -50,12 +50,13 @@ void reset();
 
 bool isInteger(string str); 
 
-pair<float, float> transform(float x, float y);
+pair<double, double> transform(double x, double y);
 
 /* global variables */
 const int WINDOWSIZE = 500;
-const int POINT_SIZE  = 1.0f;
-const float openGLRange = 2;
+const int POINT_SIZE  = 4.0f;
+const double LINE_WIDTH = 5.0f;
+const double openGLRange = 2;
 
 //the point cloud
 vector<point3D>* points;
@@ -65,8 +66,8 @@ int n;
 quadtree *tree = NULL;
 
 //range of points 
-float minX, maxX, minY, maxY; 
-float xRange, yRange;
+double minX, maxX, minY, maxY; 
+double xRange, yRange;
 
 /* ****************************** */
 /* print the array of points p of size k */
@@ -74,7 +75,7 @@ void print_points(vector<point3D>* p, int k) {
     int i;
     printf("points: ");
     for (i = 0; i < k; i++) {
-        printf("[%.1f,%.1f,%.1f] ", (*p)[i].x, (*p)[i].y, (*p)[i].z);
+        printf("[%.2f,%.2f,%.2f] ", (*p)[i].x, (*p)[i].y, (*p)[i].z);
     }
     printf("\n");
     fflush(stdout);  //flush stdout, weird sync happens when using gl thread
@@ -166,6 +167,8 @@ int main(int argc, char** argv) {
     
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glClear(GL_DEPTH_BUFFER_BIT);
     
     glPointSize(POINT_SIZE);
 
@@ -236,9 +239,9 @@ void draw_point(point3D point)
        appropriately so that [minX,maxX]x[minY,maxY] maps onto
        [-1,1]x[-1,1] 
     */
-    float x = 0, y = 0;  //just to initialize with something
+    double x = 0, y = 0;  //just to initialize with something
 
-    pair<float, float> pTrans = transform(point.x, point.y);
+    pair<double, double> pTrans = transform(point.x, point.y);
 
     x = pTrans.first;
     y = pTrans.second;
@@ -259,13 +262,15 @@ void draw_line(point3D p1, point3D p2)
     glColor3fv(red);
 
     // need to transform the points so that they are in [-1,1]x[-1,1] 
-    pair<float, float> p1Transform = transform(p1.x, p1.y),
+    pair<double, double> p1Transform = transform(p1.x, p1.y),
                        p2Transform = transform(p2.x, p2.y);
 
     p1.x = p1Transform.first;
     p1.y = p1Transform.second;
     p2.x = p2Transform.first;
     p2.y = p2Transform.second;
+
+    glLineWidth(LINE_WIDTH);
 
     glBegin(GL_LINES);
     glVertex2f(p1.x, p1.y);
@@ -280,6 +285,8 @@ void draw_points(){
 
     // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    cout << "hi" << endl;
       
     for (unsigned int i = 0; i < points->size(); i++) {
         point3D point = (*points)[i];
@@ -308,8 +315,8 @@ void draw_node(treeNode *node, const square &S)
     // the node is an internal node
     else {
 
-        float midX = (S.Xmax + S.Xmin) / 2.00,
-              midY = (S.Ymax + S.Ymin) / 2.00;
+        double midX = (S.Xmax + S.Xmin) / 2.00,
+               midY = (S.Ymax + S.Ymin) / 2.00;
 
         square NEsquare, NWsquare, SEsquare, SWsquare;
 
@@ -397,9 +404,9 @@ bool isInteger(string str) {
 }
 
 // transform point's coordinates to OpenGL window's coordinate-system
-pair<float, float> transform(float x, float y) {
-    pair<float, float> result;
-    result.first = (float)openGLRange * (x - minX) / xRange - 1;
-    result.second = (float)openGLRange * (y - minY) / yRange - 1;
+pair<double, double> transform(double x, double y) {
+    pair<double, double> result;
+    result.first = (double)openGLRange * (x - minX) / xRange - 1;
+    result.second = (double)openGLRange * (y - minY) / yRange - 1;
     return result;
 }
