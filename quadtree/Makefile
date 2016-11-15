@@ -35,7 +35,7 @@ PROGS = viewqdt
 
 FILEPATH = /Users/sngo/Desktop/GIS-Data/lasdata
 
-POINTS = 1000
+POINTS = 10000
 
 mylastoqdt: clean
 	$(CC) $(LDFLAGS) -o mylastoqdt viewqdt.cpp mylastoqdt.cpp quadtree.cpp
@@ -71,18 +71,6 @@ radiohead_data2:
 
 serpent:
 	./mylastoqdt $(FILEPATH)/serpent.txt $(POINTS)
-
-# viewqdt: viewqdt.o mylastoqdt.o quadtree.o
-# 	$(CC) -o $@ viewqdt.o quadtree.o $(LDFLAGS) 
-
-# viewqdt.o: viewqdt.cpp quadtree.h
-# 	$(CC) -c $(INCLUDEPATH) viewqdt.cpp -o $@
-
-# mylastoqdt.o: mylastoqdt.cpp quadtree.h
-# 	$(CC) -c $(INCLUDEPATH) mylastoqdt.cpp -o $@
-
-# quadtree.o: quadtree.cpp quadtree.h
-# 	$(CC) -c $(INCLUDEPATH) quadtree.cpp -o $@
 
 clean:
 	rm -f *.o

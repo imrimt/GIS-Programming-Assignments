@@ -34,8 +34,8 @@ void treeNode_free(treeNode* node) {
 }
 
 
-/* free all memory allocated for the tree, including the tree
-itself */
+// free all memory allocated for the tree, including the tree
+//  itself
 void quadtree_free(quadtree *tree) {
     if (!tree) return; 
     treeNode_free(tree->root); 
@@ -43,7 +43,7 @@ void quadtree_free(quadtree *tree) {
 }
 
 
-/* create a tree representing the  array of points */
+// create a tree representing the  array of points 
 quadtree* quadtree_build(const vector<point3D>& points, int n, int max_points) {
 
     quadtree* tree = quadtree_init();
@@ -60,13 +60,15 @@ quadtree* quadtree_build(const vector<point3D>& points, int n, int max_points) {
     // saving information to the tree
     tree->root = root;
     tree->max_points_per_leaf = max_points_per_leaf;
-    tree->height = height;
-    tree->count = numNodes;
+    tree->height = root->height;
+    tree->count = numNodes + 1;
     tree->boundingSquare = firstSqr;
 
     return tree;
 }
 
+// recursive function that builds a quadtree given a square 
+//  and a set of points
 treeNode* buildQuadtree(const vector<point3D>& points, const square &S) {
 
     treeNode* node = new (nothrow) treeNode();
@@ -82,18 +84,18 @@ treeNode* buildQuadtree(const vector<point3D>& points, const square &S) {
         if (numPoints == 0) {
             return NULL;
         }
-        numNodes++;
         node->p = points;
         node->k = numPoints;
+        node->height = 0;
         node->ne = node->nw = node->se = node->sw = NULL;
     }
 
     // partition S into 4 quadrants, then partition P into 4 corresponding 
-    // subsets
+    //  subsets
     else {
 
         double midX = (S.Xmax + S.Xmin) / 2.00,
-              midY = (S.Ymax + S.Ymin) / 2.00;
+               midY = (S.Ymax + S.Ymin) / 2.00;
 
         // if the square is too small then return NULL
         if ((S.Xmax - S.Xmin) < EPSILON || (S.Ymax - S.Ymin) < EPSILON) {
@@ -130,49 +132,56 @@ treeNode* buildQuadtree(const vector<point3D>& points, const square &S) {
             }
         }
 
-        bool hasChild = false;
+        // increase number of nodes by 4 since there is a split
+        numNodes += 4;
 
-        numNodes++;
+        // initial height of node with children is 1
+        node->height = 1;
+
+        int maxHeight = INT_MIN;
 
         node->ne = buildQuadtree(NEpoints, NEsquare);
         if (node->ne) {
-        	numNodes++;
-        	hasChild = true;
+            maxHeight = node->ne->height;
         }
 
         node->nw = buildQuadtree(NWpoints, NWsquare);
         if (node->nw) {
-        	numNodes++;
-        	hasChild = true;
+            if (maxHeight < node->nw->height) {
+                maxHeight = node->nw->height;
+            }
         }
         
         node->se = buildQuadtree(SEpoints, SEsquare);
         if (node->se) {
-        	numNodes++;
-        	hasChild = true;
+            if (maxHeight < node->se->height) {
+                maxHeight = node->se->height;
+            }
         }
 
         node->sw = buildQuadtree(SWpoints, SWsquare);
         if (node->sw) {
-        	numNodes++;
-        	hasChild = true;
+            if (maxHeight < node->sw->height) {
+                maxHeight = node->sw->height;
+            }
         }
 
-        // whenever a node has a child, the height increases by 1 (one-time only)
-        if (hasChild) height++;
+        // take the max height of each children and add to your height
+        node->height += maxHeight;
     }
 
     return node;
 }
 
+// find the bounding square for a set of points. 
 square findBoundingSquare(const vector<point3D>& points) {
 
     square S;
 
     double Xmin = INT_MAX,
-          Xmax = INT_MIN, 
-          Ymin = INT_MAX,
-          Ymax = INT_MIN;
+           Xmax = INT_MIN, 
+           Ymin = INT_MAX,
+           Ymax = INT_MIN;
 
     for (int i = 0; i < points.size(); i++) {
         point3D temp = points[i];

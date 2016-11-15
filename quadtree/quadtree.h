@@ -44,17 +44,17 @@ typedef struct {
         this->Ymin = Ymin;
         this->Ymax = Ymax;
     }
-
 } square;
 
 // treeNode struct
 typedef struct _treeNode treeNode;
 
 struct _treeNode {
-    int k;   // how many points in this quadrant 
+    int k;      // how many points in this quadrant 
+    int height; // height of the node, counting from the lowest leaf
     
     /* If this is a leaf node, p represents the vector that stored 
-    all the points in this leaf.  If this is not a leaf node, p is NULL.*/
+    all the points in this leaf.  If this is not a leaf node, p is empty.*/
     vector<point3D> p; 
 
     treeNode *nw, *ne, *sw, *se; /* children. */
@@ -62,11 +62,11 @@ struct _treeNode {
 
 // quadtree struct
 typedef struct _quadtree {
-	treeNode *root;        // root of the tree
-  	int max_points_per_leaf;
-  	int count;             // number of nodes in the tree
-  	int height;            // height of the tree
-  	square boundingSquare; // bounding square of the tree
+	treeNode *root;          // root of the tree
+    int max_points_per_leaf;
+  	int count;               // number of nodes in the tree
+  	int height;              // height of the tree
+  	square boundingSquare;   // bounding square of the tree
 } quadtree;
 
 /* initializing an empty tree */
@@ -88,6 +88,8 @@ void treeNode_free(treeNode* node);
  nodes, and each node in an pre-order traversal */
 void quadtree_print(quadtree *tree);
 
+/* given a set of points, find the minimal bounding square that 
+ contains all the points */
 square findBoundingSquare(const vector<point3D>& points);
 
 #endif

@@ -2,7 +2,7 @@
 
  What it does:
 
- - program is run as:  ./mylasqdt <lastxtfile> <nbpoints>
+ - program is run as:  ./mylastoqdt <lastxtfile> <nbpoints>
  
  - reads an ASCII point cloud and builds a quadtree on it so that each
  leaf has at most <nbpoints> points, and renders it in 2D with default
@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
     mylas.buildQuadtree(max_points_per_leaf);
 
     tree = mylas.getQuadtree();
-
+    
     minX = tree->boundingSquare.Xmin;
     maxX = tree->boundingSquare.Xmax;
     minY = tree->boundingSquare.Ymin;
