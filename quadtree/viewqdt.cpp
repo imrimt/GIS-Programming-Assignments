@@ -102,10 +102,10 @@ int main(int argc, char** argv) {
     string fileName;
     max_points_per_leaf = stoi(numPoints);
 
-    if (max_points_per_leaf < 1) {
-        cout << "Number of points in a leaf has to be at least 1. Exiting..." << endl;
-        exit(1);
-    }
+    // if (max_points_per_leaf < 3) {
+    //     cout << "Number of points in a leaf has to be at least 3. Exiting..." << endl;
+    //     exit(1);
+    // }
 
     if (input.find_last_of("/") != string::npos) {
         int pos = input.find_last_of("/");
